@@ -1,0 +1,67 @@
+
+#ifndef _IMU_H_
+#define _IMU_H_
+
+#include "arduino.h"
+#include <helper_3dmath.h>
+#include <I2Cdev.h>
+#include <Wire.h>
+
+class MPU6050;
+
+/**
+ * Wrapper for the MPU6050 sampling
+ */
+class IMU
+{
+	public:
+		/**
+		 * Constructor
+		 */
+		IMU();
+
+		/**
+		 * Setup routine for the IMU module
+		 *
+		 * @returns True if the setup was successful
+		 */
+		bool setup();
+
+		/**
+		 * Sets up the interrupt routine
+		 */
+		bool setupInterrupt();
+
+		/**
+		 * Checks whether the IMU has data that should be read
+		 */
+		bool hasData();
+
+		/**
+		 * Reads the IMU data and updates the orientation
+		 */
+		void readData();
+
+		//! Current orientation based on the IMU
+		Quaternion orientation;
+
+		//! Interrupt flag. Set to true on interrupt.
+		bool interruptFlag;
+
+	private:
+
+		//! The wrapped MPU
+		MPU6050* mpu;
+
+		//! Bytes in the FIFO buffer
+		uint16_t fifoCount;
+
+		//! Size of a single packet from the FIFO
+		uint16_t fifoPacketSize;
+
+		//! True if the interrupt handler has been set up for this IMU
+		bool hasInterruptHandler;
+};
+
+#endif // _IMU_H_
+

@@ -1,0 +1,206 @@
+﻿<Window x:Class="Jubjubnest.FlightControl.Diagnostics"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="825">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" DataContext="{Binding MotionModel}">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <Viewport3D Grid.Row="0">
+
+                <Viewport3D.Camera>
+                    <PerspectiveCamera Position="-66, 0, 33" LookDirection="2, 0, -1" UpDirection="0,0,1">
+                        <PerspectiveCamera.Transform>
+                            <RotateTransform3D>
+                                <RotateTransform3D.Rotation>
+                                    <QuaternionRotation3D Quaternion="{Binding CameraRotation}" />
+                                </RotateTransform3D.Rotation>
+                            </RotateTransform3D>
+                        </PerspectiveCamera.Transform>
+                    </PerspectiveCamera>
+                </Viewport3D.Camera>
+                <ModelVisual3D>
+                    <ModelVisual3D.Content>
+                        <Model3DGroup>
+                            <DirectionalLight Color="#cccccc" Direction="-3, 0, -3" />
+                            <AmbientLight Color="#333333" />
+                            <Model3DGroup x:Name="Copter">
+                                <GeometryModel3D>
+                                    <GeometryModel3D.Geometry>
+                                        <MeshGeometry3D
+                                            Positions="-10,-10,-2 10,-10,-2 10,10,-2 -10,10,-2
+                                                       -10,-10,2  10,-10,2  10,10,2  -10,10,2"
+                                            TriangleIndices="0 3 1 1 3 2  0 4 3 4 7 3  4 6 7 4 5 6  0 1 4 1 5 4  1 2 6 6 5 1  2 3 7 7 6 2" />
+                                    </GeometryModel3D.Geometry>
+                                    <GeometryModel3D.Material>
+                                        <DiffuseMaterial Brush="Red" />
+                                    </GeometryModel3D.Material>
+                                </GeometryModel3D>
+                                <GeometryModel3D>
+                                    <GeometryModel3D.Geometry>
+                                        <MeshGeometry3D
+                                            Positions="-0.5,-0.5,0 0.5,-0.5,0 0.5,0.5,0 -0.5,0.5,0
+                                                       -0.5,-0.5,1  0.5,-0.5,1  0.5,0.5,1  -0.5,0.5,1"
+                                            TriangleIndices="0 3 1 1 3 2  0 4 3 4 7 3  4 6 7 4 5 6  0 1 4 1 5 4  1 2 6 6 5 1  2 3 7 7 6 2" />
+                                    </GeometryModel3D.Geometry>
+                                    <GeometryModel3D.Material>
+                                        <DiffuseMaterial Brush="White" />
+                                    </GeometryModel3D.Material>
+                                    <GeometryModel3D.Transform>
+                                        <Transform3DGroup>
+                                            <ScaleTransform3D ScaleZ="10" ScaleY="3" ScaleX="3" />
+                                            <TranslateTransform3D OffsetX="-10" OffsetY="-10" />
+                                        </Transform3DGroup>
+                                    </GeometryModel3D.Transform>
+                                </GeometryModel3D>
+                                <GeometryModel3D>
+                                    <GeometryModel3D.Geometry>
+                                        <MeshGeometry3D
+                                            Positions="-0.5,-0.5,0 0.5,-0.5,0 0.5,0.5,0 -0.5,0.5,0
+                                                       -0.5,-0.5,1  0.5,-0.5,1  0.5,0.5,1  -0.5,0.5,1"
+                                            TriangleIndices="0 3 1 1 3 2  0 4 3 4 7 3  4 6 7 4 5 6  0 1 4 1 5 4  1 2 6 6 5 1  2 3 7 7 6 2" />
+                                    </GeometryModel3D.Geometry>
+                                    <GeometryModel3D.Material>
+                                        <DiffuseMaterial Brush="White" />
+                                    </GeometryModel3D.Material>
+                                    <GeometryModel3D.Transform>
+                                        <Transform3DGroup>
+                                            <ScaleTransform3D ScaleZ="10" ScaleY="3" ScaleX="3" />
+                                            <TranslateTransform3D OffsetX="-10" OffsetY="10" />
+                                        </Transform3DGroup>
+                                    </GeometryModel3D.Transform>
+                                </GeometryModel3D>
+                                <GeometryModel3D>
+                                    <GeometryModel3D.Geometry>
+                                        <MeshGeometry3D
+                                            Positions="-0.5,-0.5,0 0.5,-0.5,0 0.5,0.5,0 -0.5,0.5,0
+                                                       -0.5,-0.5,1  0.5,-0.5,1  0.5,0.5,1  -0.5,0.5,1"
+                                            TriangleIndices="0 3 1 1 3 2  0 4 3 4 7 3  4 6 7 4 5 6  0 1 4 1 5 4  1 2 6 6 5 1  2 3 7 7 6 2" />
+                                    </GeometryModel3D.Geometry>
+                                    <GeometryModel3D.Material>
+                                        <DiffuseMaterial Brush="White" />
+                                    </GeometryModel3D.Material>
+                                    <GeometryModel3D.Transform>
+                                        <Transform3DGroup>
+                                            <ScaleTransform3D ScaleZ="10" ScaleY="3" ScaleX="3" />
+                                            <TranslateTransform3D OffsetX="10" OffsetY="10" />
+                                        </Transform3DGroup>
+                                    </GeometryModel3D.Transform>
+                                </GeometryModel3D>
+                                <GeometryModel3D>
+                                    <GeometryModel3D.Geometry>
+                                        <MeshGeometry3D
+                                            Positions="-0.5,-0.5,0 0.5,-0.5,0 0.5,0.5,0 -0.5,0.5,0
+                                                       -0.5,-0.5,1  0.5,-0.5,1  0.5,0.5,1  -0.5,0.5,1"
+                                            TriangleIndices="0 3 1 1 3 2  0 4 3 4 7 3  4 6 7 4 5 6  0 1 4 1 5 4  1 2 6 6 5 1  2 3 7 7 6 2" />
+                                    </GeometryModel3D.Geometry>
+                                    <GeometryModel3D.Material>
+                                        <DiffuseMaterial Brush="White" />
+                                    </GeometryModel3D.Material>
+                                    <GeometryModel3D.Transform>
+                                        <Transform3DGroup>
+                                            <ScaleTransform3D ScaleZ="10" ScaleY="3" ScaleX="3" />
+                                            <TranslateTransform3D OffsetX="10" OffsetY="-10" />
+                                        </Transform3DGroup>
+                                    </GeometryModel3D.Transform>
+                                </GeometryModel3D>
+                                <Model3DGroup.Transform>
+                                    <Transform3DGroup>
+                                        <RotateTransform3D>
+                                            <RotateTransform3D.Rotation>
+                                                <QuaternionRotation3D Quaternion="{Binding Rotation}" />
+                                            </RotateTransform3D.Rotation>
+                                        </RotateTransform3D>
+                                        <TranslateTransform3D
+                                            OffsetX="{Binding Acceleration.X}"
+                                            OffsetY="{Binding Acceleration.Y}"
+                                            OffsetZ="{Binding Acceleration.Z}" />
+                                    </Transform3DGroup>
+                                </Model3DGroup.Transform>
+                            </Model3DGroup>
+                            <Model3DGroup x:Name="Heading">
+                                <GeometryModel3D>
+                                    <GeometryModel3D.Geometry>
+                                        <MeshGeometry3D
+                                            Positions="-10,-10,-2 10,-10,-2 10,10,-2 -10,10,-2
+                                                       -10,-10,2  10,-10,2  10,10,2  -10,10,2"
+                                            TriangleIndices="0 3 1 1 3 2  0 4 3 4 7 3  4 6 7 4 5 6  0 1 4 1 5 4  1 2 6 6 5 1  2 3 7 7 6 2" />
+                                    </GeometryModel3D.Geometry>
+                                    <GeometryModel3D.Material>
+                                        <DiffuseMaterial Brush="#8855ff00" />
+                                    </GeometryModel3D.Material>
+                                    <GeometryModel3D.Transform>
+                                        <ScaleTransform3D ScaleX="1.1" ScaleY="1.1" ScaleZ="1.1" />
+                                    </GeometryModel3D.Transform>
+                                </GeometryModel3D>
+                                <Model3DGroup.Transform>
+                                    <Transform3DGroup>
+                                        <RotateTransform3D>
+                                            <RotateTransform3D.Rotation>
+                                                <AxisAngleRotation3D Axis="1,0,0" Angle="{Binding Heading.X}" />
+                                            </RotateTransform3D.Rotation>
+                                        </RotateTransform3D>
+                                        <RotateTransform3D>
+                                            <RotateTransform3D.Rotation>
+                                                <AxisAngleRotation3D Axis="0,1,0" Angle="{Binding Heading.Y}" />
+                                            </RotateTransform3D.Rotation>
+                                        </RotateTransform3D>
+                                        <TranslateTransform3D
+                                            OffsetX="{Binding Acceleration.X}"
+                                            OffsetY="{Binding Acceleration.Y}"
+                                            OffsetZ="{Binding Acceleration.Z}" />
+                                    </Transform3DGroup>
+                                </Model3DGroup.Transform>
+                            </Model3DGroup>
+                        </Model3DGroup>
+                    </ModelVisual3D.Content>
+                </ModelVisual3D>
+            </Viewport3D>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <Button Command="{Binding ResetCamera}">Reset Camera</Button>
+                <TextBlock>Updates/s: </TextBlock>
+                <TextBlock Text="{Binding UpdateFrequency}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Row="0" Grid.Column="0">Port</Label>
+            <Label Grid.Row="1" Grid.Column="0">Log</Label>
+            <Label Grid.Row="2" Grid.Column="0">Input</Label>
+
+            <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding PortNames}" SelectedItem="{Binding SelectedPort}" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Log}" AcceptsReturn="false" TextWrapping="Wrap"></TextBox>
+
+            <Grid Grid.Row="2" Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" Text="{Binding InputText}" AcceptsReturn="false" TextWrapping="NoWrap"></TextBox>
+                <Button Grid.Column="1" Command="{Binding SendText}">Send</Button>
+            </Grid>
+
+        </Grid>
+
+    </Grid>
+</Window>
