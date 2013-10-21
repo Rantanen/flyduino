@@ -5,8 +5,8 @@
 
 #if ERRORLEVEL > 0
 
-char levels[][8] = { "FATAL", "ERROR", "WARN", "TRACE" };
-char colors[][3] = { "31", "33", "32", "36" };
+char levels[][8] = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG" };
+char colors[][3] = { "31", "33", "32", "36", "22" };
 
 void __logError( uint8_t level, const char *fmt, ... )
 {
@@ -15,7 +15,7 @@ void __logError( uint8_t level, const char *fmt, ... )
 	va_start( args, fmt );
 	vsnprintf( tmp, 128, fmt, args );
 	va_end( args );
-	Serial.print( "WARNING\t" );
+	Serial.print( "TRACE\t" );
 	Serial.print( "\x1B[" );
 	Serial.print( colors[level] );
 	Serial.print( "m" );

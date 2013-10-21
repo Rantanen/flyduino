@@ -2,20 +2,17 @@
 #include "arduino.h"
 #include "channel.h"
 #include "debug.h"
+#include "PinStatus.h"
 
 #define ULONG_MAX 4294967295ul
-// Radio PWM signal should have 1500us wavelength
-// Worst case scenario is 1500us to wait for the pin to go high and then
-// 1500us for it to go low again.
-#define TIMEOUT 1500*8
 
-Channel::Channel( long pin ):
+Channel::Channel( uint8_t pin ):
 	pin( pin ), offset( 0 ), minValue( 0 ), maxValue( 0 ), samples( 0 ), timeouts( 0 )
 {
 	resetCalibration();
 }
 
-Channel::Channel( long pin, float offset ):
+Channel::Channel( uint8_t pin, float offset ):
 	pin( pin ), offset( offset ), minValue( 0 ), maxValue( 0 ), samples( 0 ), timeouts( 0 )
 {
 	resetCalibration();
@@ -29,7 +26,7 @@ void Channel::resetCalibration()
 
 void Channel::calibrate()
 {
-	unsigned long value = pulseIn( pin, HIGH, TIMEOUT );
+	unsigned int value = PinStatus::getValue( pin );
 	if( value == 0 ) {
 		WARN( "Timeout reading PWM during channel calibration" );
 		timeouts++;
@@ -43,7 +40,7 @@ void Channel::calibrate()
 
 void Channel::update()
 {
-	long duration = pulseIn( pin, HIGH, TIMEOUT );
+	long duration = PinStatus::getValue( pin );
 	if( duration == 0 )
 	{
 		ERROR( "Timeout reading channel PWM" );

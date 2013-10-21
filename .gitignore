@@ -1,1 +1,10 @@
 *.suo
+*.swp
+
+/Jubjubnest.FlightControl/flightcontrol.eep
+/Jubjubnest.FlightControl/flightcontrol.elf
+/Jubjubnest.FlightControl/flightcontrol.hex
+
+/Jubjubnest.FlightControl/obj
+/Jubjubnest.FlightMonitor/obj
+/Jubjubnest.FlightMonitor/bin

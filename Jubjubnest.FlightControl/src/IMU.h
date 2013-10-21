@@ -61,6 +61,9 @@ class IMU
 
 		//! True if the interrupt handler has been set up for this IMU
 		bool hasInterruptHandler;
+
+		//! Stores the time in milliseconds when the FIFO was read last.
+		unsigned long lastRead;
 };
 
 #endif // _IMU_H_

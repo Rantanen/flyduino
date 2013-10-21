@@ -12,12 +12,36 @@ namespace Jubjubnest.FlightControl
 {
 	class DiagnosticsViewModel : ViewModelBase
 	{
+		private static Dictionary<string, ErrorLevel> msgLevels = new Dictionary<string, ErrorLevel>
+			{
+				{"DEBUG", ErrorLevel.Debug},
+				{"INFO", ErrorLevel.Info},
+				{"WARN", ErrorLevel.Warning},
+				{"ERROR", ErrorLevel.Error},
+				{"FATAL", ErrorLevel.Fatal}
+			};
 		public DiagnosticsViewModel()
 		{
 
 			// Assign a message handler for the log input
 			connection.MessageReceived += (o, args) =>
 				{
+					if (this.TraceLevel == ErrorLevel.None) return;
+
+					if (args.MessageType != "TRACE")
+					{
+						if (this.TraceLevel != ErrorLevel.Diagnostic)
+							return;
+					}
+					else
+					{
+						// Strip the escape code
+						string header = args.MessageArgs[0].Substring("x[xxm".Length);
+
+						ErrorLevel errorLevel = msgLevels[ header ];
+						if (errorLevel < TraceLevel) return;
+					}
+
 					var combined = DateTime.Now.ToString() + ": " + args.Message + Log;
 					if (combined.Length > 1024*10)
 						combined = combined.Substring(0, 1024*10);
@@ -84,6 +108,35 @@ namespace Jubjubnest.FlightControl
 				RaisePropertyChanged(() => InputText);
 			}
 		}
+
+		public enum ErrorLevel { Diagnostic, Debug, Info, Warning, Error, Fatal, None }
+
+		/// <summary>
+		/// Gets the available trace levels
+		/// </summary>
+		public Dictionary<string, ErrorLevel> AvailableLevels
+		{
+			get
+			{
+				return Enum.GetValues(typeof (ErrorLevel))
+					.Cast<ErrorLevel>()
+					.ToDictionary( el => Enum.GetName(typeof (ErrorLevel), el));
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the current trace level shown in the log
+		/// </summary>
+		public ErrorLevel TraceLevel
+		{
+			get { return _traceLevel; }
+			set
+			{
+				_traceLevel = value;
+				RaisePropertyChanged(() => TraceLevel);
+			}
+		}
+		private ErrorLevel _traceLevel;
 
 		/// <summary>
 		/// Gets the command for sending the InputText over the serial port

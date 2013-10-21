@@ -24,26 +24,21 @@ bool IMU::setup()
 	Wire.begin();
 	TWBR = 24;
 
-	// Init serial and wait for it to be up
-	// (Required for Leonardo)
-	Serial.begin( 115200 );
-	while( !Serial );
-
 	// Init the MPU
-	PRINT( "Initializing MPU..." );
+	INFO( "Initializing MPU..." );
 	mpu->initialize();
 
-	PRINT( "Testing device connections..." );
+	INFO( "Testing device connections..." );
 	if( !mpu->testConnection() )
 	{
-		PRINT( "MPU6050 connection failed" );
+		ERROR( "MPU6050 connection failed" );
 		return false;
 	}
 
-	PRINT( "MPU6050 connection successful" );
+	INFO( "MPU6050 connection successful" );
 
 	// Init the DMP
-	PRINT( "Initializing DMP" );
+	INFO( "Initializing DMP" );
 	uint8_t devStatus = mpu->dmpInitialize();
 
 	// Set rough axis offsets
@@ -56,13 +51,13 @@ bool IMU::setup()
 
 	// Enable the DMP
 	if( devStatus == 0 ) {
-		PRINT( "Enabling DMP..." );
+		INFO( "Enabling DMP..." );
 		mpu->setDMPEnabled( true );
 
-		PRINT( "DMP ready! Waiting first interrupt..." );
+		INFO( "DMP ready! Waiting first interrupt..." );
 		fifoPacketSize = mpu->dmpGetFIFOPacketSize();
 	} else {
-		PRINT( "DMP initialization failed (code %i)", devStatus );
+		ERROR( "DMP initialization failed (code %i)", devStatus );
 		return false;
 	}
 
@@ -100,7 +95,7 @@ void IMU::readData()
 	uint8_t mpuIntStatus = mpu->getIntStatus();
 	if( (mpuIntStatus & 0x10) || fifoCount == 1024 ) {
 		mpu->resetFIFO();
-		PRINT( "FIFO overflow!" );
+		ERROR( "FIFO overflow! Last read was %i milliseconds ago.", millis() - lastRead );
 		return;
 	}
 
@@ -114,6 +109,8 @@ void IMU::readData()
 
 		mpu->dmpGetQuaternion( &orientation, fifoBuffer );
 	}
+
+	lastRead = millis();
 }
 
 

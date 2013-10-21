@@ -3,6 +3,7 @@
 #include "IMU.h"
 #include "Channel.h"
 #include "FlightModel.h"
+#include "PinStatus.h"
 
 #include "debug.h"
 
@@ -33,26 +34,36 @@ Radio radio( 30 );
 IMU imu;
 FlightModel flightModel;
 
+#define STOP_ERROR( msg ) { ERROR( msg ); while( true ); }
+
 void setup() {
+
+	// Init serial and wait for it to be up
+	// (Required for Leonardo)
+	Serial.begin( 115200 );
+	while( !Serial );
+
+	pinMode( LED_PIN, OUTPUT );
+	pinMode( CHN1, INPUT );
+	pinMode( CHN2, INPUT );
+	pinMode( 2, INPUT );
+
+	digitalWrite( LED_PIN, LOW );
 
 	radio.addChannel( CHN1, -0.5 );
 	radio.addChannel( CHN2, -0.5 );
 
-	if( !imu.setup() ||
-			!imu.setupInterrupt() ||
-			!radio.setup() )
-	{
-		PRINT( "Initialization failed." );
-		while( true ) ;
-	}
-	
-	pinMode( LED_PIN, OUTPUT );
-	pinMode( CHN1, INPUT );
-	pinMode( CHN2, INPUT );
+	if( !PinStatus::setup() )
+		STOP_ERROR( "Failed to initialize pin change interrupts" );
+
+	if( !imu.setup() || !imu.setupInterrupt() )
+		STOP_ERROR( "Failed to initialize IMU" );
+
+	if( !radio.setup() )
+		STOP_ERROR( "Failed to initialize the radio" );
 
 	while( Serial.available() && Serial.read() );
-	TRACE( "Testing escape sequences" );
-	PRINT( "Setup done. Press any key to continue." );
+	INFO( "Setup done. Press any key to continue." );
 	while( !Serial.available() ) ;
 	while( Serial.available() && Serial.read() );
 
@@ -60,6 +71,7 @@ void setup() {
 
 bool blinkState = false;
 void loop() {
+	TRACE( "Loop" );
 
 	unsigned long startms = millis();
 	unsigned long ms = startms;

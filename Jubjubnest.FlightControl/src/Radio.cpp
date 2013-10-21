@@ -26,7 +26,7 @@ bool Radio::setup()
 	uint8_t i;
 
 	while( Serial.available() && Serial.read() );
-	PRINT( "Calibrating radio. Send any character to continue." );
+	INFO( "Calibrating radio. Send any character to continue." );
 	while( !Serial.available() ) {
 		for( i = 0; i < channelCount; i++ )
 		{
@@ -35,10 +35,10 @@ bool Radio::setup()
 	}
 	while( Serial.available() && Serial.read() );
 
-	PRINT( "Calibration done. Ranges by channel:" );
+	INFO( "Calibration done. Ranges by channel:" );
 	for( i = 0; i < channelCount; i++ )
 	{
-		PRINT( "%i\t%lu\t%lu\t(%i samples, %i timeouts)", i+1, channels[i]->minValue, channels[i]->maxValue, channels[i]->samples, channels[i]->timeouts );
+		INFO( "%i\t%lu\t%lu\t(%i samples, %i timeouts)", i+1, channels[i]->minValue, channels[i]->maxValue, channels[i]->samples, channels[i]->timeouts );
 	}
 
 	return true;

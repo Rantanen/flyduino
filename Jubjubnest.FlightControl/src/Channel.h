@@ -17,7 +17,7 @@ class Channel {
 		 *
 		 * @param pin Pin number of the input pin for this channel
 		 */
-		Channel( long pin );
+		Channel( uint8_t pin );
 
 		/**
 		 * Constructor with an offset.
@@ -27,7 +27,7 @@ class Channel {
 		 * @param pin Pin number of the input pin for this channel
 		 * @param offset Offset added to the value when updating it
 		 */
-		Channel( long pin, float offset );
+		Channel( uint8_t pin, float offset );
 
 		/**
 		 * Perform one sample worth of calibration.
@@ -51,7 +51,10 @@ class Channel {
 		void update();
 
 		//! Input pin number
-		long pin;
+		uint8_t pin;
+
+		//! Offset for the value.
+		float offset;
 
 		//! Current channel value
 		float value;
@@ -68,10 +71,6 @@ class Channel {
 
 		//! Amount of timed out samples during the calibration.
 		unsigned int timeouts;
-
-	private:
-		//! Offset for the value.
-		float offset;
 };
 
 #endif // _CHANNEL_H_

@@ -95,7 +95,7 @@ namespace Jubjubnest.FlightControl
 					{
 						if (args.MessageType == type)
 						{
-							handler(args.MessageArgs.Split(','));
+							handler(args.MessageArgs);
 						}
 					}
 					catch { }
@@ -109,21 +109,15 @@ namespace Jubjubnest.FlightControl
 			public FlightControlMessageEventArgs(string msg)
 			{
 				Message = msg;
-				var argsStartIndex = msg.IndexOf(':');
-				if (argsStartIndex >= 0)
-				{
-					MessageType = msg.Substring(0, argsStartIndex);
-					MessageArgs = msg.Substring(argsStartIndex + 1).Trim();
-				}
-				else
-				{
-					MessageType = msg;
-				}
+
+				var split = msg.Split('\t');
+				MessageType = split[0];
+				MessageArgs = split.Skip(1).ToArray();
 			}
 
 			public string Message { get; protected set; }
 			public string MessageType { get; protected set; }
-			public string MessageArgs { get; protected set; }
+			public string[] MessageArgs { get; protected set; }
 		}
 	}
 }
