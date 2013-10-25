@@ -99,7 +99,7 @@ void IMU::readData()
 		return;
 	}
 
-	if( mpuIntStatus & 0x20 == 0 ) return;
+	if( (mpuIntStatus & 0x20) == 0 ) return;
 
 	uint8_t fifoBuffer[64];
 	while( fifoCount >= fifoPacketSize )
