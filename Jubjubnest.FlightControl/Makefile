@@ -106,8 +106,9 @@ CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 
 CXXWARN = -Wall -fno-exceptions
 
-CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CSTANDARD) $(CEXTRA) $(INC) -fdata-sections -ffunction-sections
-CXXFLAGS = $(CDEFS) $(CINCS) -O$(OPT) $(CXXWARN) $(INC) -fdata-sections -ffunction-sections
+COMMONFLAGS = -fdata-sections -ffunction-sections -MMD
+CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT)  $(CSTANDARD) $(CEXTRA) $(INC) $(COMMONFLAGS)
+CXXFLAGS = $(CDEFS) $(CINCS) -O$(OPT) $(INC) $(COMMONFLAGS)
 #ASFLAGS = -Wa,-adhlns=$(<:.S=.lst),-gstabs 
 LDFLAGS = -Wl,--gc-sections -lm
 
@@ -142,10 +143,6 @@ LST = $(ASRC:.S=.lst) $(CXXSRC:.cpp=.lst) $(SRC:.c=.lst)
 ALL_CFLAGS = -mmcu=$(MCU) -I. $(CFLAGS)
 ALL_CXXFLAGS = -mmcu=$(MCU) -I. $(CXXFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
-
-test:
-	@echo $(LIB_DIRS)
-
 
 # Default target.
 all: build
@@ -209,14 +206,19 @@ $(TARGET).elf: $(OBJ)
 
 
 # Compile: create object files from C++ source files.
+$(OBJ_DIR)src/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
+	@$(CXX) -c $(ALL_CXXFLAGS) $(CXXWARN) $< -o $@
+
+# Compile: create object files from C++ source files.
 $(OBJ_DIR)%.o: %.cpp
-	mkdir -p $(dir $@)
-	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
+	@mkdir -p $(dir $@)
+	@$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
 
 # Compile: create object files from C source files.
 $(OBJ_DIR)%.o: %.c
-	mkdir -p $(dir $@)
-	$(CC) -c $(ALL_CFLAGS) $< -o $@ 
+	@mkdir -p $(dir $@)
+	@$(CC) -c $(ALL_CFLAGS) $< -o $@ 
 
 # Compile: create assembler files from C source files.
 .c.s:
@@ -231,10 +233,7 @@ $(OBJ_DIR)%.o: %.c
 
 # Target: clean project.
 clean:
-	$(REMOVE) $(OBJ)
-	#$(REMOVE) $(TARGET).hex $(TARGET).eep $(TARGET).cof $(TARGET).elf \
-	#$(TARGET).map $(TARGET).sym $(TARGET).lss \
-	#$(OBJ) $(LST) $(SRC:.c=.s) $(SRC:.c=.d) $(CXXSRC:.cpp=.s) $(CXXSRC:.cpp=.d)
+	$(REMOVE) $(OBJ) $(OBJ:.o=.d)
 
 depend:
 	if grep '^# DO NOT DELETE' $(MAKEFILE) >/dev/null; \
@@ -248,3 +247,6 @@ depend:
 	$(CC) -M -mmcu=$(MCU) $(CDEFS) $(CINCS) $(SRC) $(ASRC) >> $(MAKEFILE)
 
 .PHONY:	all build elf hex eep lss sym program coff extcoff clean depend
+
+-include $(OBJ:.o=.d)
+
