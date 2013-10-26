@@ -131,7 +131,7 @@ AVRDUDE = avrdude
 REMOVE = rm -f
 MV = mv -f
 ifeq ($(OS),Windows_NT)
-	MKDIR = -$(shell mkdir $(subst /,\,$(1)) > NUL)
+	MKDIR = -$(shell mkdir $(subst /,\,$(1)) > NUL 2>&1)
 else
 	MKDIR = mkdir -p $(1)
 endif
@@ -189,10 +189,10 @@ extcoff: $(TARGET).elf
 .SUFFIXES: .elf .hex .eep .lss .sym .o
 
 .elf.hex:
-	$(OBJCOPY) -O $(FORMAT) -R .eeprom $< $@
+	@$(OBJCOPY) -O $(FORMAT) -R .eeprom $< $@
 
 .elf.eep:
-	-$(OBJCOPY) -O $(FORMAT) -j .eeprom --set-section-flags=.eeprom=alloc,load \
+	@-$(OBJCOPY) -O $(FORMAT) -j .eeprom --set-section-flags=.eeprom=alloc,load \
 	--no-change-warnings --change-section-lma .eeprom=0 $< $@
 
 # Create extended listing file from ELF output file.
@@ -207,23 +207,23 @@ extcoff: $(TARGET).elf
 
 # Link: create ELF output file from object files.
 $(TARGET).elf: $(OBJ)
-	$(CC) $(ALL_CFLAGS) $(OBJ) --output $@ $(LDFLAGS)
+	@$(CC) $(ALL_CFLAGS) $(OBJ) --output $@ $(LDFLAGS)
 
 
 # Compile: create object files from C++ source files.
 $(OBJ_DIR)src/%.o: src/%.cpp
-	$(call MKDIR,$(dir $@))
-	$(CXX) -c $(ALL_CXXFLAGS) $(CXXWARN) $< -o $@
+	@$(call MKDIR,$(dir $@))
+	@$(CXX) -c $(ALL_CXXFLAGS) $(CXXWARN) $< -o $@
 
 # Compile: create object files from C++ source files.
 $(OBJ_DIR)%.o: %.cpp
-	$(call MKDIR,$(dir $@))
-	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
+	@$(call MKDIR,$(dir $@))
+	@$(CXX) -c $(ALL_CXXFLAGS) -w $< -o $@
 
 # Compile: create object files from C source files.
 $(OBJ_DIR)%.o: %.c
-	$(call MKDIR,$(dir $@))
-	$(CC) -c $(ALL_CFLAGS) $< -o $@ 
+	@$(call MKDIR,$(dir $@))
+	@$(CC) -c $(ALL_CFLAGS) $< -o $@ 
 
 # Compile: create assembler files from C source files.
 .c.s:
@@ -238,7 +238,7 @@ $(OBJ_DIR)%.o: %.c
 
 # Target: clean project.
 clean:
-	$(REMOVE) $(OBJ) $(OBJ:.o=.d)
+	@$(REMOVE) $(OBJ) $(OBJ:.o=.d)
 
 depend:
 	if grep '^# DO NOT DELETE' $(MAKEFILE) >/dev/null; \
