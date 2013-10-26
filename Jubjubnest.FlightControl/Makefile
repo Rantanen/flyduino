@@ -45,7 +45,7 @@
 #
 # $Id$
 
-LIBS = Wire MPU6050 I2Cdev
+LIBS = Wire MPU6050 I2Cdev Servo
 LIBS_INC = $(LIBS) Wire/utility
 
 LIB_DIRS = $(patsubst %,lib/%,$(LIBS))
@@ -69,7 +69,7 @@ ARDUINO_H = $(ARDUINO)/arduino.h
 # $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c
 SRC = $(ARDUINO_C:%=$(ARDUINO)/%) $(filter %.c, $(LIB_SRC))
 CXXSRC = $(ARDUINO_CXX:%=$(ARDUINO)/%) $(wildcard src/*.cpp) $(filter %.cpp, $(LIB_SRC))
-INC=-Iarduino/cores/arduino -Iarduino/variants/standard $(LIB_INC)
+INC=-Iinclude -Iarduino/cores/arduino -Iarduino/variants/standard $(LIB_INC)
 MCU = atmega328p
 F_CPU = 16000000
 FORMAT = ihex
@@ -130,6 +130,11 @@ NM = avr-nm
 AVRDUDE = avrdude
 REMOVE = rm -f
 MV = mv -f
+ifeq ($(OS),Windows_NT)
+	MKDIR = -$(shell mkdir $(subst /,\,$(1)) > NUL)
+else
+	MKDIR = mkdir -p $(1)
+endif
 
 # Define all object files.
 OBJ_DIR = obj/
@@ -207,18 +212,18 @@ $(TARGET).elf: $(OBJ)
 
 # Compile: create object files from C++ source files.
 $(OBJ_DIR)src/%.o: src/%.cpp
-	@mkdir -p $(dir $@)
-	@$(CXX) -c $(ALL_CXXFLAGS) $(CXXWARN) $< -o $@
+	$(call MKDIR,$(dir $@))
+	$(CXX) -c $(ALL_CXXFLAGS) $(CXXWARN) $< -o $@
 
 # Compile: create object files from C++ source files.
 $(OBJ_DIR)%.o: %.cpp
-	@mkdir -p $(dir $@)
-	@$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
+	$(call MKDIR,$(dir $@))
+	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
 
 # Compile: create object files from C source files.
 $(OBJ_DIR)%.o: %.c
-	@mkdir -p $(dir $@)
-	@$(CC) -c $(ALL_CFLAGS) $< -o $@ 
+	$(call MKDIR,$(dir $@))
+	$(CC) -c $(ALL_CFLAGS) $< -o $@ 
 
 # Compile: create assembler files from C source files.
 .c.s:
