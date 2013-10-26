@@ -26,18 +26,3 @@ void __logError( uint8_t level, const char *fmt, ... )
 }
 
 #endif
-
-#if SERIAL_OUT
-
-void PRINT( const char *fmt, ... )
-{
-	char tmp[128];
-	va_list args;
-	va_start( args, fmt );
-	vsnprintf( tmp, 128, fmt, args );
-	va_end( args );
-	Serial.print( "LOG\t" );
-	Serial.println( tmp );
-}
-
-#endif
