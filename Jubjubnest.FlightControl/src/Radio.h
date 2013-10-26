@@ -45,19 +45,13 @@ class Radio
 		bool setup();
 
 		/**
-		 * Checks whether the radio input should be sampled
-		 *
-		 * @param currentMillis Current time in milliseconds
-		 * @returns True if the radio should be sampled
-		 */
-		bool shouldSample( unsigned long currentMillis );
-
-		/**
 		 * Samples the radio inputs and updates the channel values
 		 * 
 		 * @param currentMillis Current time in milliseconds
+		 *
+		 * @returns True if the radio was sampled
 		 */
-		void sample( unsigned long currentMillis );
+		bool sample( unsigned long currentMillis );
 
 		/**
 		 * Channels controlled by this radio

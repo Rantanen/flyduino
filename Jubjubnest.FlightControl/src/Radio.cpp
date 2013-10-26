@@ -44,19 +44,17 @@ bool Radio::setup()
 	return true;
 }
 
-bool Radio::shouldSample( unsigned long currentMillis )
+bool Radio::sample( unsigned long currentMillis )
 {
-	return currentMillis > nextSample;
-}
+	if( currentMillis < nextSample ) return false;
 
-void Radio::sample( unsigned long currentMillis )
-{
 	for( int i = 0; i < channelCount; i++ )
 	{
 		channels[ i ]->update();
 	}
 
 	nextSample = currentMillis + interval;
+	return true;
 }
 
 

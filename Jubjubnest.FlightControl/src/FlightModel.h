@@ -4,6 +4,9 @@
 
 #include <arduino.h>
 #include <helper_3dmath.h>
+#include "Engine.h"
+
+#define MAX_ENGINES 8
 
 /**
  * Flight model abstraction.
@@ -13,6 +16,14 @@
 class FlightModel
 {
 	public:
+
+		/**
+		 * Adds a new engine record to the flight model
+		 *
+		 * @param engine Pointer to the engine
+		 */
+		void addEngine( Engine* engine );
+
 		/**
 		 * Updates the orientation with new information.
 		 *
@@ -28,14 +39,30 @@ class FlightModel
 		 * @param yaw Yaw Euler angle
 		 * @param pitch Pitch Euler angle
 		 * @param roll Roll Euler angle
+		 * @param power Average engine power
 		 */
-		void updateHeading( float yaw, float pitch, float roll );
+		void updateHeading( float yaw, float pitch, float roll, uint8_t power );
+
+		/**
+		 * Adjusts the flight values
+		 */
+		void update();
 
 		//! Orientation
 		Quaternion orientation;
 
 		//! Intended vehicle heading
-		VectorFloat heading;
+		Quaternion heading;
+
+		//! Inteded power
+		uint8_t power;
+
+		//! Amount of engines present
+		int engineCount;
+
+		//! Engines present
+		Engine* engines[ MAX_ENGINES ];
+
 };
 
 #endif // _FLIGHTMODEL_H_

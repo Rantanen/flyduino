@@ -1,6 +1,13 @@
 
 #include "IMU.h"
+#include "common.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #include <MPU6050_6Axis_MotionApps20.h>
+#pragma GCC diagnostic pop
 
 #include "debug.h"
 
@@ -77,26 +84,21 @@ bool IMU::setupInterrupt()
 	return true;
 }
 
-bool IMU::hasData()
+bool IMU::readData()
 {
 	if( !interruptFlag ) return false;
-
 	fifoCount = mpu->getFIFOCount();
+	uint8_t mpuIntStatus = mpu->getIntStatus();
+
+	// Give a warning in case the FIFO buffer is too full.
 	if( fifoCount > 1024/2 )
 		WARN( "FIFO buffer half full" );
-
-	return fifoCount >= fifoPacketSize;
-}
-
-void IMU::readData()
-{
-	interruptFlag = false;
 
 	// Check for overflow
 	if( (mpuIntStatus & 0x10) || fifoCount == 1024 ) {
 		mpu->resetFIFO();
 		ERROR( "FIFO overflow! Last read was %i milliseconds ago.", millis() - lastRead );
-		return;
+		return false;
 	}
 
 	// Wait for there to be enough packets.
@@ -124,6 +126,7 @@ void IMU::readData()
 	// Mark the last read for diagnostic purposes.
 	// TODO: Remove this in case it seems useless.
 	lastRead = millis();
+	return true;
 }
 
 

@@ -33,14 +33,11 @@ class IMU
 		bool setupInterrupt();
 
 		/**
-		 * Checks whether the IMU has data that should be read
-		 */
-		bool hasData();
-
-		/**
 		 * Reads the IMU data and updates the orientation
+		 *
+		 * @returns True if there was new data
 		 */
-		void readData();
+		bool readData();
 
 		//! Current orientation based on the IMU
 		Quaternion orientation;
