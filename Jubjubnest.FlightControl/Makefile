@@ -40,7 +40,7 @@
 #
 #  6. Type "make" and press enter to compile/verify your program.
 #
-#  7. Type "make upload", reset your Arduino board, and press enter  to
+#  7. Type "make deploy", reset your Arduino board, and press enter  to
 #     upload your program to the Arduino board.
 #
 # $Id$
@@ -164,7 +164,7 @@ lss: $(TARGET).lss
 sym: $(TARGET).sym
 
 # Program the device.  
-upload: $(TARGET).hex $(TARGET).eep
+deploy: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
 
 
