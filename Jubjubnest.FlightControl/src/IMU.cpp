@@ -92,15 +92,26 @@ void IMU::readData()
 {
 	interruptFlag = false;
 
-	uint8_t mpuIntStatus = mpu->getIntStatus();
+	// Check for overflow
 	if( (mpuIntStatus & 0x10) || fifoCount == 1024 ) {
 		mpu->resetFIFO();
 		ERROR( "FIFO overflow! Last read was %i milliseconds ago.", millis() - lastRead );
 		return;
 	}
 
-	if( (mpuIntStatus & 0x20) == 0 ) return;
+	// Wait for there to be enough packets.
+	if( fifoCount < fifoPacketSize || (mpuIntStatus & 0x02) == 0 ) return false;
+	interruptFlag = false;
 
+	// There's enough fifo bytes and the packet should be ready, but we're mis-aligned.
+	// In this case FIFO might contain bad data so reset it and ignore it for now.
+	if( fifoCount % fifoPacketSize != 0 ) {
+		WARN( "Fifo count not a multiple of %i: %i", fifoPacketSize, fifoCount );
+		mpu->resetFIFO();
+		return false;
+	}
+
+	// Wohoo! We get to read new data. \o/
 	uint8_t fifoBuffer[64];
 	while( fifoCount >= fifoPacketSize )
 	{
@@ -110,6 +121,8 @@ void IMU::readData()
 		mpu->dmpGetQuaternion( &orientation, fifoBuffer );
 	}
 
+	// Mark the last read for diagnostic purposes.
+	// TODO: Remove this in case it seems useless.
 	lastRead = millis();
 }
 
