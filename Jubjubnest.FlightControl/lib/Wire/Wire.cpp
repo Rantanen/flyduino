@@ -27,6 +27,7 @@ extern "C" {
 }
 
 #include "Wire.h"
+#include <Arduino.h>
 
 // Initialize Class Variables //////////////////////////////////////////////////
 
@@ -83,6 +84,7 @@ uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop
   }
   // perform blocking read into buffer
   uint8_t read = twi_readFrom(address, rxBuffer, quantity, sendStop);
+
   // set rx buffer iterator vars
   rxBufferIndex = 0;
   rxBufferLength = read;
@@ -138,6 +140,7 @@ uint8_t TwoWire::endTransmission(uint8_t sendStop)
 {
   // transmit buffer (blocking)
   int8_t ret = twi_writeTo(txAddress, txBuffer, txBufferLength, 1, sendStop);
+
   // reset tx buffer iterator vars
   txBufferIndex = 0;
   txBufferLength = 0;

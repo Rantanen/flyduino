@@ -26,6 +26,7 @@
 #include <avr/interrupt.h>
 #include <compat/twi.h>
 #include "Arduino.h" // for digitalWrite
+#include <HardwareSerial.h>
 
 #ifndef cbi
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
@@ -59,6 +60,9 @@ static volatile uint8_t twi_rxBufferIndex;
 
 static volatile uint8_t twi_error;
 
+static volatile uint8_t twState;
+static uint32_t twi_timeoutc;
+
 /* 
  * Function twi_init
  * Desc     readys twi pins and sets twi bitrate
@@ -67,6 +71,9 @@ static volatile uint8_t twi_error;
  */
 void twi_init(void)
 {
+  // Disable TWI to allow re-init
+  TWCR = 0;
+
   // initialize state
   twi_state = TWI_READY;
   twi_sendStop = true;		// default value
@@ -122,9 +129,13 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
   }
 
   // wait until twi is ready, become master receiver
+  twi_timeout(1);
   while(TWI_READY != twi_state){
+    if( twi_timeout(0) ) return -1;
     continue;
   }
+  digitalWrite(13, LOW);
+
   twi_state = TWI_MRX;
   twi_sendStop = sendStop;
   // reset error state (0xFF.. no error occured)
@@ -143,6 +154,7 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
   twi_slarw = TW_READ;
   twi_slarw |= address << 1;
 
+  twState = 0;
   if (true == twi_inRepStart) {
     // if we're in the repeated start state, then we've already sent the start,
     // (@@@ we hope), and the TWI statemachine is just waiting for the address byte.
@@ -159,7 +171,9 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
     TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA) | _BV(TWINT) | _BV(TWSTA);
 
   // wait for read operation to complete
+  twi_timeout(1);
   while(TWI_MRX == twi_state){
+    if( twi_timeout(0) ) return -1;
     continue;
   }
 
@@ -199,7 +213,9 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
   }
 
   // wait until twi is ready, become master transmitter
+  twi_timeout(1);
   while(TWI_READY != twi_state){
+    if( twi_timeout(0) ) return 4;
     continue;
   }
   twi_state = TWI_MTX;
@@ -239,7 +255,9 @@ uint8_t twi_writeTo(uint8_t address, uint8_t* data, uint8_t length, uint8_t wait
     TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE) | _BV(TWSTA);	// enable INTs
 
   // wait for write operation to complete
+  twi_timeout(1);
   while(wait && (TWI_MTX == twi_state)){
+    if( twi_timeout(0) ) return 4;
     continue;
   }
   
@@ -338,6 +356,8 @@ void twi_stop(void)
   // wait for stop condition to be exectued on bus
   // TWINT is not set after a stop condition!
   while(TWCR & _BV(TWSTO)){
+    // Not checking for timeout here. TWCR should be controlled by
+	// this processor and not slave device/I2C bus dependant.
     continue;
   }
 
@@ -360,8 +380,29 @@ void twi_releaseBus(void)
   twi_state = TWI_READY;
 }
 
+/*
+ * Function twi_timeout
+ * Desc     inits or checks for timeout
+ * Input	ini: byte indicating whether timeout ought to be initilized
+ * Output	0: ok
+ *          1: timeout
+ */
+uint8_t twi_timeout(uint8_t ini)
+{
+	if (ini) twi_timeoutc=0; else twi_timeoutc++;	
+	if (twi_timeoutc>=100000UL) {
+		serial_print_c('@');
+		serial_print_c('\n');
+		twi_timeoutc=0;
+		twi_init();
+		return 1;
+	}
+  return 0;  
+}
+
 ISR(TWI_vect)
 {
+	twState = TW_STATUS;
   switch(TW_STATUS){
     // All Master
     case TW_START:     // sent start condition

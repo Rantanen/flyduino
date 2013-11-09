@@ -567,7 +567,7 @@ class MPU6050 {
         void setIntDataReadyEnabled(bool enabled);
 
         // INT_STATUS register
-        uint8_t getIntStatus();
+        uint8_t getIntStatus( int8_t* result );
         bool getIntFreefallStatus();
         bool getIntMotionStatus();
         bool getIntZeroMotionStatus();
@@ -634,7 +634,7 @@ class MPU6050 {
         bool getI2CMasterModeEnabled();
         void setI2CMasterModeEnabled(bool enabled);
         void switchSPIEnabled(bool enabled);
-        void resetFIFO();
+        void resetFIFO( int8_t* result );
         void resetI2CMaster();
         void resetSensors();
 
@@ -666,12 +666,12 @@ class MPU6050 {
         void setStandbyZGyroEnabled(bool enabled);
 
         // FIFO_COUNT_* registers
-        uint16_t getFIFOCount();
+        uint16_t getFIFOCount( int8_t* result );
 
         // FIFO_R_W register
         uint8_t getFIFOByte();
         void setFIFOByte(uint8_t data);
-        void getFIFOBytes(uint8_t *data, uint8_t length);
+        void getFIFOBytes(uint8_t *data, uint8_t length, int8_t* result);
 
         // WHO_AM_I register
         uint8_t getDeviceID();

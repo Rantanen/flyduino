@@ -362,11 +362,11 @@ uint8_t MPU6050::dmpInitialize() {
     int8_t ygOffsetTC = getYGyroOffsetTC();
     int8_t zgOffsetTC = getZGyroOffsetTC();
     DEBUG_PRINT(F("X gyro offset = "));
-    DEBUG_PRINTLN(xgOffset);
+    DEBUG_PRINTLN(xgOffsetTC);
     DEBUG_PRINT(F("Y gyro offset = "));
-    DEBUG_PRINTLN(ygOffset);
+    DEBUG_PRINTLN(ygOffsetTC);
     DEBUG_PRINT(F("Z gyro offset = "));
-    DEBUG_PRINTLN(zgOffset);
+    DEBUG_PRINTLN(zgOffsetTC);
 
     // setup weird slave stuff (?)
     DEBUG_PRINTLN(F("Setting slave 0 address to 0x7F..."));
@@ -439,15 +439,18 @@ uint8_t MPU6050::dmpInitialize() {
             writeMemoryBlock(dmpUpdate + 3, dmpUpdate[2], dmpUpdate[0], dmpUpdate[1]);
 
             DEBUG_PRINTLN(F("Resetting FIFO..."));
-            resetFIFO();
+			int8_t result = 0;
+            resetFIFO( &result );
 
             DEBUG_PRINTLN(F("Reading FIFO count..."));
-            uint16_t fifoCount = getFIFOCount();
+			uint16_t fifoCount = 0;
+			result = -1;
+			while( result < 0 ) { fifoCount = getFIFOCount( &result ); }
             uint8_t fifoBuffer[128];
 
             DEBUG_PRINT(F("Current FIFO count="));
             DEBUG_PRINTLN(fifoCount);
-            getFIFOBytes(fifoBuffer, fifoCount);
+            getFIFOBytes(fifoBuffer, fifoCount, &result);
 
             DEBUG_PRINTLN(F("Setting motion detection threshold to 2..."));
             setMotionDetectionThreshold(2);
@@ -462,7 +465,8 @@ uint8_t MPU6050::dmpInitialize() {
             setZeroMotionDetectionDuration(0);
 
             DEBUG_PRINTLN(F("Resetting FIFO..."));
-            resetFIFO();
+			result = -1;
+            while( result < 0 ) { resetFIFO( &result ); }
 
             DEBUG_PRINTLN(F("Enabling FIFO..."));
             setFIFOEnabled(true);
@@ -486,15 +490,19 @@ uint8_t MPU6050::dmpInitialize() {
             writeMemoryBlock(dmpUpdate + 3, dmpUpdate[2], dmpUpdate[0], dmpUpdate[1]);
 
             DEBUG_PRINTLN(F("Waiting for FIFO count > 2..."));
-            while ((fifoCount = getFIFOCount()) < 3);
+			result = -1;
+            while ((fifoCount = getFIFOCount( &result )) < 3 || result < 0);
 
             DEBUG_PRINT(F("Current FIFO count="));
             DEBUG_PRINTLN(fifoCount);
             DEBUG_PRINTLN(F("Reading FIFO data..."));
-            getFIFOBytes(fifoBuffer, fifoCount);
+
+            getFIFOBytes(fifoBuffer, fifoCount, &result);
 
             DEBUG_PRINTLN(F("Reading interrupt status..."));
-            uint8_t mpuIntStatus = getIntStatus();
+			uint8_t mpuIntStatus;
+			result = -1;
+            while( result < 0 ) { mpuIntStatus = getIntStatus( &result ); }
 
             DEBUG_PRINT(F("Current interrupt status="));
             DEBUG_PRINTLNF(mpuIntStatus, HEX);
@@ -504,16 +512,17 @@ uint8_t MPU6050::dmpInitialize() {
             readMemoryBlock(dmpUpdate + 3, dmpUpdate[2], dmpUpdate[0], dmpUpdate[1]);
 
             DEBUG_PRINTLN(F("Waiting for FIFO count > 2..."));
-            while ((fifoCount = getFIFOCount()) < 3);
+			result = -1;
+            while ((fifoCount = getFIFOCount( &result )) < 3 || result < 0);
 
             DEBUG_PRINT(F("Current FIFO count="));
             DEBUG_PRINTLN(fifoCount);
 
             DEBUG_PRINTLN(F("Reading FIFO data..."));
-            getFIFOBytes(fifoBuffer, fifoCount);
+            getFIFOBytes(fifoBuffer, fifoCount, &result);
 
             DEBUG_PRINTLN(F("Reading interrupt status..."));
-            mpuIntStatus = getIntStatus();
+            mpuIntStatus = getIntStatus( &result );
 
             DEBUG_PRINT(F("Current interrupt status="));
             DEBUG_PRINTLNF(mpuIntStatus, HEX);
@@ -534,8 +543,9 @@ uint8_t MPU6050::dmpInitialize() {
             }*/
 
             DEBUG_PRINTLN(F("Resetting FIFO and clearing INT status one last time..."));
-            resetFIFO();
-            getIntStatus();
+			result = -1;
+            while( result < 0 ) { resetFIFO( &result ); }
+            getIntStatus( &result );
         } else {
             DEBUG_PRINTLN(F("ERROR! DMP configuration verification failed."));
             return 2; // configuration block loading failed
@@ -548,7 +558,8 @@ uint8_t MPU6050::dmpInitialize() {
 }
 
 bool MPU6050::dmpPacketAvailable() {
-    return getFIFOCount() >= dmpGetFIFOPacketSize();
+	int8_t result = 0;
+    return getFIFOCount( &result ) >= dmpGetFIFOPacketSize() && result >= 0;
 }
 
 // uint8_t MPU6050::dmpSetFIFORate(uint8_t fifoRate);
@@ -714,7 +725,8 @@ uint8_t MPU6050::dmpReadAndProcessFIFOPacket(uint8_t numPackets, uint8_t *proces
     uint8_t buf[dmpPacketSize];
     for (uint8_t i = 0; i < numPackets; i++) {
         // read packet from FIFO
-        getFIFOBytes(buf, dmpPacketSize);
+		int8_t result = 0;
+        getFIFOBytes(buf, dmpPacketSize, &result);
 
         // process packet
         if ((status = dmpProcessFIFOPacket(buf)) > 0) return status;

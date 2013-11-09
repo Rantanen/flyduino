@@ -32,6 +32,10 @@
   #define TWI_BUFFER_LENGTH 32
   #endif
 
+  #ifndef TWI_TIMEOUT
+  #define TWI_TIMEOUT 1000
+  #endif
+
   #define TWI_READY 0
   #define TWI_MRX   1
   #define TWI_MTX   2
@@ -48,6 +52,7 @@
   void twi_reply(uint8_t);
   void twi_stop(void);
   void twi_releaseBus(void);
+  uint8_t twi_timeout(uint8_t);
 
 #endif
 

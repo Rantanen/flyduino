@@ -1625,8 +1625,8 @@ void MPU6050::setIntDataReadyEnabled(bool enabled) {
  * @return Current interrupt status
  * @see MPU6050_RA_INT_STATUS
  */
-uint8_t MPU6050::getIntStatus() {
-    I2Cdev::readByte(devAddr, MPU6050_RA_INT_STATUS, buffer);
+uint8_t MPU6050::getIntStatus( int8_t* result ) {
+    (*result) = I2Cdev::readByte(devAddr, MPU6050_RA_INT_STATUS, buffer);
     return buffer[0];
 }
 /** Get Free Fall interrupt status.
@@ -2321,8 +2321,8 @@ void MPU6050::switchSPIEnabled(bool enabled) {
  * @see MPU6050_RA_USER_CTRL
  * @see MPU6050_USERCTRL_FIFO_RESET_BIT
  */
-void MPU6050::resetFIFO() {
-    I2Cdev::writeBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_FIFO_RESET_BIT, true);
+void MPU6050::resetFIFO( int8_t* result ) {
+    *result = I2Cdev::writeBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_FIFO_RESET_BIT, true);
 }
 /** Reset the I2C Master.
  * This bit resets the I2C Master when set to 1 while I2C_MST_EN equals 0.
@@ -2638,8 +2638,8 @@ void MPU6050::setStandbyZGyroEnabled(bool enabled) {
  * set of sensor data bound to be stored in the FIFO (register 35 and 36).
  * @return Current FIFO buffer size
  */
-uint16_t MPU6050::getFIFOCount() {
-    I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_COUNTH, 2, buffer);
+uint16_t MPU6050::getFIFOCount( int8_t* result ) {
+    *result = I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_COUNTH, 2, buffer);
     return (((uint16_t)buffer[0]) << 8) | buffer[1];
 }
 
@@ -2674,8 +2674,8 @@ uint8_t MPU6050::getFIFOByte() {
     I2Cdev::readByte(devAddr, MPU6050_RA_FIFO_R_W, buffer);
     return buffer[0];
 }
-void MPU6050::getFIFOBytes(uint8_t *data, uint8_t length) {
-    I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_R_W, length, data);
+void MPU6050::getFIFOBytes(uint8_t *data, uint8_t length, int8_t* result) {
+    *result = I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_R_W, length, data);
 }
 /** Write byte to FIFO buffer.
  * @see getFIFOByte()

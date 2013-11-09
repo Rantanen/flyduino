@@ -23,6 +23,8 @@
 #ifndef HardwareSerial_h
 #define HardwareSerial_h
 
+#ifdef __cplusplus
+
 #include <inttypes.h>
 
 #include "Stream.h"
@@ -111,5 +113,13 @@ class HardwareSerial : public Stream
 #endif
 
 extern void serialEventRun(void) __attribute__((weak));
+
+#define EXTERNC extern "C"
+#else
+#define EXTERNC
+#endif
+
+EXTERNC void serial_print_i( uint8_t i );
+EXTERNC void serial_print_c( char c );
 
 #endif

@@ -34,6 +34,13 @@
 
 #include "HardwareSerial.h"
 
+void serial_print_i( uint8_t i ) {
+	Serial.print( i );
+}
+void serial_print_c( char c ) {
+	Serial.print( c );
+}
+
 /*
  * on ATmega8, the uart and its bits are not numbered, so there is no "TXC0"
  * definition.
@@ -505,4 +512,3 @@ HardwareSerial::operator bool() {
 #endif
 
 #endif // whole file
-
