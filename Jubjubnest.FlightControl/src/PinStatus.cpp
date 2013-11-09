@@ -8,13 +8,20 @@ uint8_t previousPins1 = 0;
 unsigned long highStart[16];
 unsigned int pinValues[16];
 
+// 3, 4, 7, 8, 11
+
 bool PinStatus::setup()
 {
+	// Enable the interrupts
 	PCICR |= ( 1 << PCIE0 );
-	PCICR |= ( 1 << PCIE1 );
+	PCICR |= ( 1 << PCIE2 );
 
-	PCMSK0 |= ( 1 << PCINT0 );
-	PCMSK0 |= ( 1 << PCINT1 );
+	PCMSK0 |= ( 1 << PCINT0 ); // 8
+	PCMSK0 |= ( 1 << PCINT3 ); // 11
+
+	PCMSK2 |= ( 1 << PCINT19 ); // 3
+	PCMSK2 |= ( 1 << PCINT20 ); // 4
+	PCMSK2 |= ( 1 << PCINT23 ); // 7
 
 	// Set MCUCR to 01 (Trigger on any change)
 	MCUCR &= ~( 1 << ISC00 );
@@ -67,9 +74,10 @@ ISR( PCINT0_vect )
 	checkPin( changedPins, pins, 4, 12, us );
 	checkPin( changedPins, pins, 5, 13, us );
 	previousPins0 = pins;
+
 }
 
-ISR( PCINT1_vect )
+ISR( PCINT2_vect )
 {
 	uint8_t pins = PIND;
 	unsigned long us = micros();
@@ -88,5 +96,6 @@ ISR( PCINT1_vect )
 	checkPin( changedPins, pins, 6, 6, us );
 	checkPin( changedPins, pins, 7, 7, us );
 	previousPins1 = pins;
+
 }
 

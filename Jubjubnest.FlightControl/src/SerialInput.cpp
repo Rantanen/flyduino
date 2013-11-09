@@ -9,7 +9,6 @@ SerialInput::SerialInput()
 
 bool SerialInput::setup()
 {
-	servo.attach( 6, 1000, 4000 );
 	return true;
 }
 
@@ -17,6 +16,12 @@ void SerialInput::update()
 {
 	while( Serial.available() > 0 )
 	{
+		// If we've been ignoring, wait until 0 to reset status.
+		if( read == -1 ) {
+			if( Serial.read() == 0 ) { read = 0; }
+			return;
+		}
+
 		buffer[ read ] = Serial.read();
 		if( buffer[ read ] == 0 )
 		{
@@ -26,6 +31,9 @@ void SerialInput::update()
 		else
 		{
 			read++;
+
+			// If we're overflowing, start ignoring.
+			if( read == 16 ) { read = -1; }
 		}
 	}
 }

@@ -41,7 +41,7 @@ void Channel::calibrate()
 void Channel::update()
 {
 	long duration = PinStatus::getValue( pin );
-	if( duration == 0 )
+	if( duration == 0 && false )
 	{
 		ERROR( "Timeout reading channel PWM" );
 		return;

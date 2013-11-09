@@ -27,6 +27,9 @@ class IMU
 		 */
 		bool setup();
 
+		void calibrate();
+		void calibrationDone();
+
 		/**
 		 * Sets up the interrupt routine
 		 */

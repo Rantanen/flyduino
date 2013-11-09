@@ -11,6 +11,8 @@
 
 #include "debug.h"
 
+#define UINT16_MAX 0xffff
+
 namespace IMUInterrupt {
 	IMU* registeredIMU = 0;
 	void interruptHandler()
@@ -32,20 +34,20 @@ bool IMU::setup()
 	TWBR = 24;
 
 	// Init the MPU
-	INFO( "Initializing MPU..." );
+	INFO_F( "Initializing MPU..." );
 	mpu->initialize();
 
-	INFO( "Testing device connections..." );
+	INFO_F( "Testing device connections..." );
 	if( !mpu->testConnection() )
 	{
 		ERROR( "MPU6050 connection failed" );
 		return false;
 	}
 
-	INFO( "MPU6050 connection successful" );
+	INFO_F( "MPU6050 connection successful" );
 
 	// Init the DMP
-	INFO( "Initializing DMP" );
+	INFO_F( "Initializing DMP" );
 	uint8_t devStatus = mpu->dmpInitialize();
 
 	// Set rough axis offsets
@@ -58,17 +60,26 @@ bool IMU::setup()
 
 	// Enable the DMP
 	if( devStatus == 0 ) {
-		INFO( "Enabling DMP..." );
+		INFO_F( "Enabling DMP..." );
 		mpu->setDMPEnabled( true );
 
-		INFO( "DMP ready! Waiting first interrupt..." );
+		INFO_F( "DMP ready! Waiting first interrupt..." );
 		fifoPacketSize = mpu->dmpGetFIFOPacketSize();
 	} else {
 		ERROR( "DMP initialization failed (code %i)", devStatus );
 		return false;
 	}
 
+	INFO_F( "MPU initialized!" );
 	return true;
+}
+
+void IMU::calibrate()
+{
+}
+
+void IMU::calibrationDone()
+{
 }
 
 bool IMU::setupInterrupt()
@@ -86,18 +97,84 @@ bool IMU::setupInterrupt()
 
 bool IMU::readData()
 {
-	if( !interruptFlag ) return false;
-	fifoCount = mpu->getFIFOCount();
-	uint8_t mpuIntStatus = mpu->getIntStatus();
+	if( (lastRead != UINT16_MAX) && (millis() > (lastRead + 1000) ) ) {
+		lastRead = UINT16_MAX;
+		FATAL( "No new IMU data for a second" );
+	}
+
+	// Check for overflow
+	int8_t result;
+	while( Serial.available() )
+	{
+		char c = Serial.read();
+		uint8_t devStatus = 0;
+		switch( c ) {
+			case 'r':
+				INFO_F("Manual reset");
+				mpu->resetFIFO( &result );
+				return false;
+			case 's':
+				INFO_F("Shutting down DMP");
+				mpu->setDMPEnabled( false );
+				return false;
+			case 'e':
+				INFO_F("Enabling DMP");
+				mpu->setDMPEnabled( true );
+				return false;
+			case 'i':
+				INFO_F( "Initializing MPU" );
+				mpu->initialize();
+				return false;
+			case 't':
+				INFO_F( "Testing connection" );
+				INFO_F( "Testing device connections..." );
+				if( !mpu->testConnection() )
+				{
+					ERROR( "MPU6050 connection failed" );
+				} else {
+					INFO_F( "MPU6050 connection successful" );
+				}
+				return false;
+			case 'd':
+				INFO_F( "Initializing DMP" );
+				devStatus = mpu->dmpInitialize();
+				if( devStatus != 0 )
+					ERROR( "DMP initialization failed (code %i)", devStatus );
+				return false;
+			case 'q':
+				INFO( "ROT\t%i\t%i\t%i\t%i",
+						(int)(orientation.x*1000),
+						(int)(orientation.y*1000),
+						(int)(orientation.z*1000),
+						(int)(orientation.w*1000) );
+				INFO( "Last read: %lu", lastRead );
+
+			default:
+				continue;
+		}
+	}
+
+	if( !interruptFlag ) {
+	 	return false;
+	}
+	fifoCount = mpu->getFIFOCount( &result );
+	if( result < 0 ) return false;
+
+	uint8_t mpuIntStatus = mpu->getIntStatus( &result );
+	if( result < 0 ) return false;
 
 	// Give a warning in case the FIFO buffer is too full.
 	if( fifoCount > 1024/2 )
 		WARN( "FIFO buffer half full" );
 
-	// Check for overflow
-	if( (mpuIntStatus & 0x10) || fifoCount == 1024 ) {
-		mpu->resetFIFO();
-		ERROR( "FIFO overflow! Last read was %i milliseconds ago.", millis() - lastRead );
+	if( (mpuIntStatus & 0x10) || fifoCount == 1024 ){
+		result = -1;
+		while( result < 0 ) {
+			INFO_F("Overflow reset");
+			mpu->resetFIFO( &result );
+		}
+
+		//ERROR( "FIFO overflow! Last read was %i milliseconds ago.", millis() - lastRead );
 		return false;
 	}
 
@@ -108,8 +185,9 @@ bool IMU::readData()
 	// There's enough fifo bytes and the packet should be ready, but we're mis-aligned.
 	// In this case FIFO might contain bad data so reset it and ignore it for now.
 	if( fifoCount % fifoPacketSize != 0 ) {
-		WARN( "Fifo count not a multiple of %i: %i", fifoPacketSize, fifoCount );
-		mpu->resetFIFO();
+		//WARN( "Fifo count not a multiple of %i: %i", fifoPacketSize, fifoCount );
+		INFO_F("Unaligned reset");
+		mpu->resetFIFO( &result );
 		return false;
 	}
 
@@ -117,7 +195,9 @@ bool IMU::readData()
 	uint8_t fifoBuffer[64];
 	while( fifoCount >= fifoPacketSize )
 	{
-		mpu->getFIFOBytes( fifoBuffer, fifoPacketSize );
+		mpu->getFIFOBytes( fifoBuffer, fifoPacketSize, &result );
+		if( result < 0 ) return false;
+
 		fifoCount -= fifoPacketSize;
 
 		mpu->dmpGetQuaternion( &orientation, fifoBuffer );
@@ -125,6 +205,9 @@ bool IMU::readData()
 
 	// Mark the last read for diagnostic purposes.
 	// TODO: Remove this in case it seems useless.
+	if( lastRead == UINT16_MAX ) {
+		INFO_F( "IMU data resumed" );
+	}
 	lastRead = millis();
 	return true;
 }

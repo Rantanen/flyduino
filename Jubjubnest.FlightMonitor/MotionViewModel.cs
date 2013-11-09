@@ -30,13 +30,37 @@ namespace Jubjubnest.FlightControl
 			// Register handler for the heading update
 			connection.RegisterHandler("HEAD", head =>
 				{
-					Heading = headingAverage.Push(new Vector3D(
-						double.Parse(head[0], CultureInfo.InvariantCulture)*45,
-						double.Parse(head[1], CultureInfo.InvariantCulture)*-45,
-						double.Parse(head[2], CultureInfo.InvariantCulture)*45));
+					Heading = new Quaternion(
+						double.Parse(head[0], CultureInfo.InvariantCulture),
+						double.Parse(head[1], CultureInfo.InvariantCulture),
+						double.Parse(head[2], CultureInfo.InvariantCulture),
+						double.Parse(head[3], CultureInfo.InvariantCulture));
 				});
 
-			ResetCamera = new RelayCommand(() => CameraRotation = Rotation * new Quaternion(0, 0, 1, 0));
+			connection.RegisterHandler("OFFSET", offset =>
+				{
+					AngularOffset.Yaw = double.Parse(offset[0], CultureInfo.InvariantCulture);
+					AngularOffset.Pitch = double.Parse(offset[1], CultureInfo.InvariantCulture);
+					AngularOffset.Roll = double.Parse(offset[2], CultureInfo.InvariantCulture);
+				});
+
+			_engines = new List<EngineViewModel>
+				{
+					new EngineViewModel(5, 10, 10),
+					new EngineViewModel(6, 10, -10),
+					new EngineViewModel(9, -10, -10),
+					new EngineViewModel(10, -10, 10)
+				};
+
+			var enginesByPin = _engines.ToDictionary(e => e.Pin);
+			connection.RegisterHandler("ENG", eng =>
+				{
+					var pin = int.Parse(eng[0]);
+					enginesByPin[pin].Power = int.Parse(eng[1]);
+				});
+
+			ResetCamera = new RelayCommand(() => CameraRotation = Rotation); // * new Quaternion(0, 0, 1, 0));
+			AngularOffset = new EulerAngles();
 		}
 
 		private readonly FrequencyCounter updateFrequencyCounter = new FrequencyCounter();
@@ -59,7 +83,7 @@ namespace Jubjubnest.FlightControl
 		/// <summary>
 		/// Gets the current heading vector
 		/// </summary>
-		public Vector3D Heading
+		public Quaternion Heading
 		{
 			get { return _heading; }
 			set
@@ -68,7 +92,7 @@ namespace Jubjubnest.FlightControl
 				RaisePropertyChanged(() => Heading);
 			}
 		}
-		private Vector3D _heading;
+		private Quaternion _heading;
 
 		/// <summary>
 		/// Gets the current orientation
@@ -84,6 +108,8 @@ namespace Jubjubnest.FlightControl
 		}
 		private Quaternion _rotation;
 
+		public EulerAngles AngularOffset { get; protected set; }
+
 		/// <summary>
 		/// Gets the current camera rotation
 		/// </summary>
@@ -98,61 +124,12 @@ namespace Jubjubnest.FlightControl
 		}
 		private Quaternion _cameraRotation;
 
-		/// <summary>
-		/// Gets the front left engine power
-		/// </summary>
-		public float FrontLeftEnginePower
+		public IEnumerable<EngineViewModel> Engines
 		{
-			get { return _frontLeftEnginePower; }
-			protected set
-			{
-				_frontLeftEnginePower = value;
-				RaisePropertyChanged(() => FrontLeftEnginePower);
-			}
+			get { return _engines; }
 		}
-		private float _frontLeftEnginePower;
+		private List<EngineViewModel> _engines;
 
-		/// <summary>
-		/// Gets the front right engine power
-		/// </summary>
-		public float FrontRightEnginePower
-		{
-			get { return _frontRightEnginePower; }
-			protected set
-			{
-				_frontRightEnginePower = value;
-				RaisePropertyChanged(() => FrontRightEnginePower);
-			}
-		}
-		private float _frontRightEnginePower;
-
-		/// <summary>
-		/// Gets the rear left engine power
-		/// </summary>
-		public float RearLeftEnginePower
-		{
-			get { return _rearLeftEnginePower; }
-			protected set
-			{
-				_rearLeftEnginePower = value;
-				RaisePropertyChanged(() => RearLeftEnginePower);
-			}
-		}
-		private float _rearLeftEnginePower;
-
-		/// <summary>
-		/// Gets the rear right engine power
-		/// </summary>
-		public float RearRightEnginePower
-		{
-			get { return _rearRightEnginePower; }
-			protected set
-			{
-				_rearRightEnginePower = value;
-				RaisePropertyChanged(() => RearRightEnginePower);
-			}
-		}
-		private float _rearRightEnginePower;
 
 		public RelayCommand ResetCamera { get; protected set; }
 	}

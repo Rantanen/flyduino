@@ -51,14 +51,25 @@ void Diagnostics::report( unsigned long ms )
 				DIAG( flightModel->heading.x, 3 );
 				DIAG( flightModel->heading.y, 3 );
 				DIAG( flightModel->heading.z, 3 );
-				DIAGLN( flightModel->orientation.w, 3 );
+				DIAGLN( flightModel->heading.w, 3 );
+				reports++;
+
+				step++;
+				ALLOW_YIELD;
+
+			case 3:
+				
+				DIAG( "OFFSET" );
+				DIAG( flightModel->yaw, 3 );
+				DIAG( flightModel->pitch, 3 );
+				DIAGLN( flightModel->roll, 3 );
 				reports++;
 
 				step++;
 				engineStep = 0;
-				ALLOW_YIELD;
+				ALLOW_YIELD
 
-			case 3:
+			case 4:
 
 				while( engineStep < flightModel->engineCount )
 				{

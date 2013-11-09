@@ -42,6 +42,8 @@ namespace Jubjubnest.FlightControl
 				serialPort.Close();
 				serialPort = null;
 			}
+
+			readingThread.Join();
 		}
 
 		private void Read()
@@ -75,6 +77,15 @@ namespace Jubjubnest.FlightControl
 			lock (threadGuard)
 			{
 				serialPort.Write(text + "\n");
+			}
+		}
+
+		public void Send(byte[] b)
+		{
+			lock (threadGuard)
+			{
+				serialPort.Write(b, 0, b.Length);
+				serialPort.Write(new[] { (byte)0 }, 0, 1);
 			}
 		}
 

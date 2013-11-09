@@ -45,6 +45,18 @@ class Radio
 		bool setup();
 
 		/**
+		 * Runs a single calibration step to find the limits of axis.
+		 */
+		void calibrate();
+
+		/**
+		 * Signals the calibration is done.
+		 *
+		 * Saves the calibration settings if they were valid.
+		 */
+		void calibrationDone();
+
+		/**
 		 * Samples the radio inputs and updates the channel values
 		 * 
 		 * @param currentMillis Current time in milliseconds

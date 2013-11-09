@@ -3,8 +3,9 @@
 #define _FLIGHTMODEL_H_
 
 #include <arduino.h>
-#include <helper_3dmath.h>
+#include "Quaternion.h"
 #include "Engine.h"
+#include "PID.h"
 
 #define MAX_ENGINES 8
 
@@ -16,6 +17,7 @@
 class FlightModel
 {
 	public:
+		FlightModel();
 
 		/**
 		 * Adds a new engine record to the flight model
@@ -29,7 +31,7 @@ class FlightModel
 		 *
 		 * @param orientation New orientation.
 		 */
-		void updateOrientation( const Quaternion *orientation );
+		void updateOrientation( const Quat *orientation );
 
 		/**
 		 * Updates the heading with new information.
@@ -49,10 +51,10 @@ class FlightModel
 		void update();
 
 		//! Orientation
-		Quaternion orientation;
+		Quat orientation;
 
 		//! Intended vehicle heading
-		Quaternion heading;
+		Quat heading;
 
 		//! Inteded power
 		uint8_t power;
@@ -63,6 +65,19 @@ class FlightModel
 		//! Engines present
 		Engine* engines[ MAX_ENGINES ];
 
+		unsigned long lastUpdate;
+
+		float yaw;
+		float pitch;
+		float roll;
+
+		PID yawOffset;
+		PID pitchOffset;
+		PID rollOffset;
+
+		PID yawSpeed;
+		PID pitchSpeed;
+		PID rollSpeed;
 };
 
 #endif // _FLIGHTMODEL_H_

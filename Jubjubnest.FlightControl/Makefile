@@ -131,7 +131,7 @@ AVRDUDE = avrdude
 REMOVE = rm -f
 MV = mv -f
 ifeq ($(OS),Windows_NT)
-	MKDIR = -$(shell mkdir $(subst /,\,$(1)) > NUL 2>&1)
+	MKDIR = -$(shell cmd.exe /c mkdir $(subst /,\,$(1)) > NUL 2>&1)
 else
 	MKDIR = mkdir -p $(1)
 endif
@@ -212,17 +212,17 @@ $(TARGET).elf: $(OBJ)
 
 # Compile: create object files from C++ source files.
 $(OBJ_DIR)src/%.o: src/%.cpp
-	@$(call MKDIR,$(dir $@))
+	$(call MKDIR,$(dir $@))
 	@$(CXX) -c $(ALL_CXXFLAGS) $(CXXWARN) $< -o $@
 
 # Compile: create object files from C++ source files.
 $(OBJ_DIR)%.o: %.cpp
-	@$(call MKDIR,$(dir $@))
+	$(call MKDIR,$(dir $@))
 	@$(CXX) -c $(ALL_CXXFLAGS) -w $< -o $@
 
 # Compile: create object files from C source files.
 $(OBJ_DIR)%.o: %.c
-	@$(call MKDIR,$(dir $@))
+	$(call MKDIR,$(dir $@))
 	@$(CC) -c $(ALL_CFLAGS) $< -o $@ 
 
 # Compile: create assembler files from C source files.

@@ -28,34 +28,43 @@ namespace Jubjubnest.FlightControl
 				{
 					if (this.TraceLevel == ErrorLevel.None) return;
 
-					if (args.MessageType != "TRACE")
+					try
 					{
-						if (this.TraceLevel != ErrorLevel.Diagnostic)
-							return;
+						if (args.MessageType != "TRACE")
+						{
+							if (this.TraceLevel != ErrorLevel.Diagnostic)
+								return;
+						}
+						else
+						{
+							// Strip the escape code
+							string header = args.MessageArgs[0].Substring("x[xxm".Length);
+
+							ErrorLevel errorLevel = msgLevels[header];
+							if (errorLevel < TraceLevel) return;
+						}
+
+						var combined = DateTime.Now.ToString() + ": " + args.Message + Log;
+						if (combined.Length > 1024*10)
+							combined = combined.Substring(0, 1024*10);
+						Log = combined;
 					}
-					else
+					catch (Exception e)
 					{
-						// Strip the escape code
-						string header = args.MessageArgs[0].Substring("x[xxm".Length);
-
-						ErrorLevel errorLevel = msgLevels[ header ];
-						if (errorLevel < TraceLevel) return;
+						Log += e.ToString() + "\n";
 					}
-
-					var combined = DateTime.Now.ToString() + ": " + args.Message + Log;
-					if (combined.Length > 1024*10)
-						combined = combined.Substring(0, 1024*10);
-					Log = combined;
 				};
 
 			// Populate port names
 			this._portNames = SerialPort.GetPortNames();
 			SendText = new RelayCommand(() => connection.Send(this.InputText));
 			MotionModel = new MotionViewModel(connection);
+			ControlModel = new ControlViewModel(connection);
 		}
 
 		private FlightControlConnection connection = new FlightControlConnection();
 		public MotionViewModel MotionModel { get; protected set; }
+		public ControlViewModel ControlModel { get; protected set; }
 
 		/// <summary>
 		/// Gets or sets the Log text

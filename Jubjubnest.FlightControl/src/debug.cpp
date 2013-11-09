@@ -8,6 +8,18 @@
 char levels[][8] = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG" };
 char colors[][3] = { "31", "33", "32", "36", "22" };
 
+void __logErrorF( uint8_t level, const __FlashStringHelper* msg )
+{
+	Serial.print( "TRACE\t" );
+	Serial.print( "\x1B[" );
+	Serial.print( colors[level] );
+	Serial.print( "m" );
+	Serial.print( levels[level] );
+	Serial.print( "\t" );
+	Serial.print( msg );
+}
+
+
 void __logError( uint8_t level, const char *fmt, ... )
 {
 	char tmp[128];
@@ -22,6 +34,10 @@ void __logError( uint8_t level, const char *fmt, ... )
 	Serial.print( levels[level] );
 	Serial.print( "\t" );
 	Serial.print( tmp );
+}
+
+void __endError()
+{
 	Serial.println( "\x1B[m" );
 }
 

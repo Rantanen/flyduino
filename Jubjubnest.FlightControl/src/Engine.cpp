@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #define MIN_WIDTH 1000
+#define WIDTH_LIMIT 2000
 #define MAX_WIDTH 4000
 
 #define MIN_VALUE 0
@@ -24,9 +25,9 @@ void Engine::setPower( uint8_t power )
 {
 	_power = power;
 	_servo.write( map(
-				constrain( power, MIN_VALUE, MAX_VALUE ),
+				power,
 				0, 255,
-				MIN_WIDTH, MAX_WIDTH ) );
+				MIN_WIDTH, WIDTH_LIMIT ) );
 }
 
 

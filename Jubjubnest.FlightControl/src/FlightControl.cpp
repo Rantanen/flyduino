@@ -7,16 +7,25 @@
 #include "SerialInput.h"
 #include "Engine.h"
 #include "Diagnostics.h"
+#include "Quaternion.h"
 
 #include "debug.h"
 
 #define ULONG_MAX 4294967295
-#define HAS_IMU
 
 #define LED_PIN 13
 
-#define CHN1 8
-#define CHN2 9
+#define CHN1 4
+#define CHN2 11
+#define CHN3 7
+#define CHN4 8
+#define CHN5 3
+
+int freeRam () {
+	extern int __heap_start, *__brkval; 
+	int v; 
+	return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
 
 int main(void)
 {
@@ -39,15 +48,13 @@ Radio radio( 30 );
 FlightModel flightModel;
 SerialInput serialInput;
 Engine engines[4] = {
-	Engine(5, 10, 10, 0),
-	Engine(6, 10, -10, 0),
-	Engine(9, -10, -10, 0),
-	Engine(10, -10, 10, 0)
+	Engine(5, 30, 30, 0),
+	Engine(6, 30, -30, 0),
+	Engine(9, -30, -30, 0),
+	Engine(10, -30, 30, 0)
 };
 
-#ifdef HAS_IMU
 IMU imu;
-#endif
 
 #define STOP_ERROR( msg ) { ERROR( msg ); while( true ); }
 
@@ -59,14 +66,15 @@ void setup() {
 	while( !Serial );
 
 	pinMode( LED_PIN, OUTPUT );
-	pinMode( CHN1, INPUT );
-	pinMode( CHN2, INPUT );
 	pinMode( 2, INPUT );
 
 	digitalWrite( LED_PIN, LOW );
 
 	radio.addChannel( CHN1, -0.5 );
 	radio.addChannel( CHN2, -0.5 );
+	radio.addChannel( CHN3, 0 );
+	radio.addChannel( CHN4, -0.5 );
+	radio.addChannel( CHN5, -0.5 );
 	diag.setFlightModel( &flightModel );
 
 	for( int i = 0; i < 4; i++ )
@@ -85,48 +93,55 @@ void setup() {
 	if( !serialInput.setup() )
 		STOP_ERROR( "Failed to set up serial input" );
 
-#ifdef HAS_IMU
 	if( !imu.setup() || !imu.setupInterrupt() )
 		STOP_ERROR( "Failed to initialize IMU" );
-#endif
 
-	while( Serial.available() && Serial.read() );
-	INFO( "Setup done. Press any key to continue." );
-	while( !Serial.available() ) ;
-	while( Serial.available() && Serial.read() );
+	digitalWrite( LED_PIN, HIGH );
+	unsigned long endTime = millis() + 5000;
+	while( millis() < endTime )
+	{
+		radio.calibrate();
+		imu.calibrate();
+	}
+	digitalWrite( LED_PIN, LOW );
+
+	radio.calibrationDone();
+	imu.calibrationDone();
+
+	delay( 2000 );
+	digitalWrite( LED_PIN, HIGH );
+	delay( 500 );
+	digitalWrite( LED_PIN, LOW );
 
 }
 
 bool blinkState = false;
 void loop()
 {
-
 	unsigned long startms = millis();
 	unsigned long ms = startms;
 
-	/*
 	if( radio.sample( ms ) )
 	{
 		flightModel.updateHeading(
 				radio.channels[0]->value,
 				radio.channels[1]->value,
-				0.0f, 0 );
+				radio.channels[2]->value,
+				radio.channels[3]->value );
 	}
-	*/
 
-#ifdef HAS_IMU
 	if( imu.readData() )
 	{
-		flightModel.updateOrientation( &imu.orientation );
+		flightModel.updateOrientation( reinterpret_cast< Quat* >( &imu.orientation ) );
 	}
-#endif
 
-	unsigned long start = micros();
 	flightModel.update();
-	//INFO( "Update duration:\t%lu", micros() - start );
-	serialInput.update();
+
+	//serialInput.update();
 
 	diag.report( ms );
+
+	//while( Serial.available() && Serial.read() );
 
 	blinkState = !blinkState;
 	//digitalWrite( LED_PIN, blinkState );

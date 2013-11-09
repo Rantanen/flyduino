@@ -18,30 +18,31 @@ Radio::~Radio()
 void Radio::addChannel( int pin, float offset )
 {
 	channels[ channelCount ] = new Channel( pin, offset );
+	pinMode( pin, INPUT );
 	channelCount++;
 }
 
 bool Radio::setup()
 {
-	uint8_t i;
+	return true;
+}
 
+void Radio::calibrate()
+{
 	while( Serial.available() && Serial.read() );
-	INFO( "Calibrating radio. Send any character to continue." );
-	while( !Serial.available() ) {
-		for( i = 0; i < channelCount; i++ )
-		{
-			channels[i]->calibrate();
-		}
+	for( uint8_t i = 0; i < channelCount; i++ )
+	{
+		channels[i]->calibrate();
 	}
-	while( Serial.available() && Serial.read() );
+}
 
-	INFO( "Calibration done. Ranges by channel:" );
-	for( i = 0; i < channelCount; i++ )
+void Radio::calibrationDone()
+{
+	INFO( "Radio ranges by channel:" );
+	for( uint8_t i = 0; i < channelCount; i++ )
 	{
 		INFO( "%i\t%lu\t%lu\t(%i samples, %i timeouts)", i+1, channels[i]->minValue, channels[i]->maxValue, channels[i]->samples, channels[i]->timeouts );
 	}
-
-	return true;
 }
 
 bool Radio::sample( unsigned long currentMillis )

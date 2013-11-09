@@ -65,9 +65,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ControlViewModel.cs" />
+    <Compile Include="Converters\EngineToModelConverter.cs" />
+    <Compile Include="EngineViewModel.cs" />
+    <Compile Include="EulerAngles.cs" />
     <Compile Include="MathHelpers\ShiftingDoubleAverage.cs" />
     <Compile Include="MathHelpers\FrequencyCounter.cs" />
     <Compile Include="MathHelpers\ShiftingVectorAverage.cs" />
+    <Compile Include="Converters\RadianToDegreeConverter.cs" />
     <Page Include="Diagnostics.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
