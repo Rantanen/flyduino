@@ -40,6 +40,11 @@ class Channel {
 		void calibrate();
 
 		/**
+		 * Signal calibration as done.
+		 */
+		void calibrationDone();
+
+		/**
 		 * Resets the old calibration data.
 		 *
 		 * Resets the max/min value information. This can be used
@@ -50,21 +55,41 @@ class Channel {
 		//! Reads the input pin and updates the current channel value.
 		void update();
 
+		/**
+		 * Saves the calibration range to EEPROM
+		 *
+		 * @param slot Channel slot to save the range to
+		 */
+		void saveRange( int slot );
+
+		/**
+		 * Loads the calibration range from the EEPROM
+		 *
+		 * @param slot Channel slot to load the range from
+		 */
+		void loadRange( int slot );
+
 		//! Input pin number
 		uint8_t pin;
 
 		//! Offset for the value.
 		float offset;
 
-		//! Current channel value
+		//! Raw pulse duration in microseconds.
+		unsigned int raw;
+
+		//! Current channel value.
 		float value;
 
 	  
 		//! Calibrated minimum value for the channel input
-		unsigned long minValue;
+		unsigned int minValue;
 
 		//! Calibrated maximum value for the channel input
-		unsigned long maxValue;
+		unsigned int maxValue;
+
+		//! Center value
+		unsigned int center;
 
 		//! Amount of samples received for calibration.
 		unsigned int samples;

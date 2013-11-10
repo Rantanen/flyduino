@@ -22,11 +22,6 @@ void Radio::addChannel( int pin, float offset )
 	channelCount++;
 }
 
-bool Radio::setup()
-{
-	return true;
-}
-
 void Radio::calibrate()
 {
 	while( Serial.available() && Serial.read() );
@@ -41,13 +36,25 @@ void Radio::calibrationDone()
 	INFO( "Radio ranges by channel:" );
 	for( uint8_t i = 0; i < channelCount; i++ )
 	{
+		channels[i]->calibrationDone();
+		channels[i]->saveRange( i );
 		INFO( "%i\t%lu\t%lu\t(%i samples, %i timeouts)", i+1, channels[i]->minValue, channels[i]->maxValue, channels[i]->samples, channels[i]->timeouts );
+	}
+}
+
+void Radio::loadCalibration()
+{
+	INFO( "Radio ranges by channel:" );
+	for( uint8_t i = 0; i < channelCount; i++ )
+	{
+		channels[i]->loadRange( i );
+		INFO( "%i\t%u\t%u", i+1, channels[i]->minValue, channels[i]->maxValue );
 	}
 }
 
 bool Radio::sample( unsigned long currentMillis )
 {
-	if( currentMillis < nextSample ) return false;
+	if( currentMillis > 0 && currentMillis < nextSample ) return false;
 
 	for( int i = 0; i < channelCount; i++ )
 	{

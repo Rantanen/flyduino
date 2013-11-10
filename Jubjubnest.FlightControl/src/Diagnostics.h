@@ -7,15 +7,6 @@
 #include "FlightModel.h"
 #include "Engine.h"
 
-#define MAX_ENGINES 8
-
-#define DIAG_ORIENTATION 1
-#define DIAG_HEADING 2
-#define DIAG_ENGINE 3
-
-#define DIAG_START(t) start(t)
-#define DIAG_END() end()
-
 class Diagnostics
 {
 	public:

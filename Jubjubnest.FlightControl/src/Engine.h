@@ -15,7 +15,7 @@ class Engine
 		 * @param y Engine Y coordinate
 		 * @param z Engine Z coordinate
 		 */
-		Engine( uint8_t pin, int x, int y, int z );
+		Engine( uint8_t pin );
 
 		/**
 		 * Engine setup routine
@@ -42,13 +42,6 @@ class Engine
 		 * @return Engine pin
 		 */
 		uint8_t getPin() { return _pin; }
-
-		//! Engine X coordinate
-		int x;
-		//! Engine Y coordinate
-		int y;
-		//! Engine Z coordinate
-		int z;
 
 
 	private:

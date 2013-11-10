@@ -2,28 +2,17 @@
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
+#include "Arduino.h"
+
 /**
  * Debug constants
  */
-
-//! Trace information
-/**
- * 0 - No error reporting
- * 1 - Fatal errors only
- * 2 - Include Error-level tracing
- * 3 - Include Warning-level tracing
- * 4 - Include Info-level tracing
- * 5 - Include Debug-level tracing
- */
-#define ERRORLEVEL 5
-
-//! Sensor diagnostic output
-#define DIAGNOSTICS 1
+#include "common.h"
 
 /**
  * Sensor diagnostic macros
  */
-#if DIAGNOSTICS
+#ifdef DIAGNOSTICS
 
 #define DIAG( args... ) \
 	Serial.print( args ); \

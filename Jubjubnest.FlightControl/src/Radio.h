@@ -36,15 +36,6 @@ class Radio
 		void addChannel( int pin, float offset );
 
 		/**
-		 * Setup routine for the radio control.
-		 *
-		 * Performs radio calibration for example.
-		 *
-		 * @returns True if setup was successsful
-		 */
-		bool setup();
-
-		/**
 		 * Runs a single calibration step to find the limits of axis.
 		 */
 		void calibrate();
@@ -55,6 +46,11 @@ class Radio
 		 * Saves the calibration settings if they were valid.
 		 */
 		void calibrationDone();
+
+		/**
+		 * Loads previously calibrated radio values.
+		 */
+		void loadCalibration();
 
 		/**
 		 * Samples the radio inputs and updates the channel values

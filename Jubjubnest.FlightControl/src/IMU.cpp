@@ -74,14 +74,6 @@ bool IMU::setup()
 	return true;
 }
 
-void IMU::calibrate()
-{
-}
-
-void IMU::calibrationDone()
-{
-}
-
 bool IMU::setupInterrupt()
 {
 	if( IMUInterrupt::registeredIMU != 0 ) {
@@ -104,59 +96,9 @@ bool IMU::readData()
 
 	// Check for overflow
 	int8_t result;
-	while( Serial.available() )
-	{
-		char c = Serial.read();
-		uint8_t devStatus = 0;
-		switch( c ) {
-			case 'r':
-				INFO_F("Manual reset");
-				mpu->resetFIFO( &result );
-				return false;
-			case 's':
-				INFO_F("Shutting down DMP");
-				mpu->setDMPEnabled( false );
-				return false;
-			case 'e':
-				INFO_F("Enabling DMP");
-				mpu->setDMPEnabled( true );
-				return false;
-			case 'i':
-				INFO_F( "Initializing MPU" );
-				mpu->initialize();
-				return false;
-			case 't':
-				INFO_F( "Testing connection" );
-				INFO_F( "Testing device connections..." );
-				if( !mpu->testConnection() )
-				{
-					ERROR( "MPU6050 connection failed" );
-				} else {
-					INFO_F( "MPU6050 connection successful" );
-				}
-				return false;
-			case 'd':
-				INFO_F( "Initializing DMP" );
-				devStatus = mpu->dmpInitialize();
-				if( devStatus != 0 )
-					ERROR( "DMP initialization failed (code %i)", devStatus );
-				return false;
-			case 'q':
-				INFO( "ROT\t%i\t%i\t%i\t%i",
-						(int)(orientation.x*1000),
-						(int)(orientation.y*1000),
-						(int)(orientation.z*1000),
-						(int)(orientation.w*1000) );
-				INFO( "Last read: %lu", lastRead );
 
-			default:
-				continue;
-		}
-	}
+	if( !interruptFlag ) { return false; }
 
-	if( !interruptFlag ) {
-	 	return false;
-	}
 	fifoCount = mpu->getFIFOCount( &result );
 	if( result < 0 ) return false;
 

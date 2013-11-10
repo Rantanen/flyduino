@@ -45,7 +45,7 @@
 #
 # $Id$
 
-LIBS = Wire MPU6050 I2Cdev Servo
+LIBS = Wire MPU6050 I2Cdev Servo EEPROM
 LIBS_INC = $(LIBS) Wire/utility
 
 LIB_DIRS = $(patsubst %,lib/%,$(LIBS))
@@ -53,11 +53,16 @@ LIB_INC = $(patsubst %,-Ilib/%,$(LIBS_INC))
 LIB_SRC = $(join $(LIBS:%=lib/%), $(LIBS:%=/%.cpp)) lib/Wire/utility/twi.c
 
 ARDUINO_C = avr-libc/malloc.c avr-libc/realloc.c WInterrupts.c wiring.c \
-			wiring_analog.c wiring_digital.c wiring_pulse.c
+			wiring_digital.c wiring_pulse.c
+			#wiring_analog.c
 			#wiring_shift.c
-ARDUINO_CXX = CDC.cpp HardwareSerial.cpp HID.cpp IPAddress.cpp \
-			  new.cpp Print.cpp Stream.cpp Tone.cpp \
-			  USBCore.cpp WMath.cpp WString.cpp
+ARDUINO_CXX = CDC.cpp HardwareSerial.cpp \
+			  new.cpp Print.cpp Stream.cpp \
+			  WMath.cpp WString.cpp
+			  # HID.cpp
+			  # USBCore.cpp
+			  # Tone.cpp
+			  # IPAddress.cpp \
 				# main.cpp not included
 
 #PORT = /dev/tty.usbserial*
