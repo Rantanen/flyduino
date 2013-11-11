@@ -60,13 +60,16 @@ void FlightModel::updateHeading( float yaw, float pitch, float roll, float power
 	this->controlPitch = pitch;
 	this->controlRoll = roll;
 
-	this->power = power * MAX_CONTROL_POWER;
+	this->power = power * ( MAX_CONTROL_POWER - MIN_CONTROL_POWER ) + MIN_CONTROL_POWER;
 	this->engineOn = engineOn;
 
 	// If we're not armed but engines were turned on, arm.
 	// Also require that throttle is at zero.
 	if( !armed && engineOn && power == 0 )
 	{
+		yawOffset.resetError();
+		pitchOffset.resetError();
+		rollOffset.resetError();
 		setArmed( true );
 	}
 
@@ -75,7 +78,8 @@ void FlightModel::updateHeading( float yaw, float pitch, float roll, float power
 
 void setEnginePower( Engine* engine, float power )
 {
-	//engine->setPower( constrain( (int)power + offsetPower, 0, 255 ) );
+	Serial.print( power, 2 );
+	//engine->setPower( constrain( power, 0, 1000 ) );
 }
 
 void FlightModel::update()
@@ -86,7 +90,7 @@ void FlightModel::update()
 	if( !engineOn )
 	{
 		for( int i = 0; i < engineCount; i++ )
-			setEnginePower( engines[i], 0 );
+			engines[i]->setPower( 0 );
 
 		// Once the engines have been forced to power 0,
 		// set armed to false.
@@ -108,15 +112,11 @@ void FlightModel::update()
 	pitch = controlPitch - asin(
 			2*(orientation.w*orientation.y - orientation.z*orientation.x) );
 
-	/*
 	Serial.print( yaw, 6 );
 	Serial.print( "\t" );
 	Serial.print( pitch, 6 );
 	Serial.print( "\t" );
 	Serial.print( roll, 6 );
-	Serial.print( "\t" );
-	Serial.println( power );
-	*/
 
 	yawOffset.update( yaw, currentTime );
 	pitchOffset.update( pitch, currentTime );
@@ -128,10 +128,14 @@ void FlightModel::update()
 	rollOffset.resetError();
 	*/
 
-	setEnginePower( engines[0], (float)power - pitchOffset.getValue() - yawOffset.getValue() + rollOffset.getValue() );
-	setEnginePower( engines[1], (float)power - pitchOffset.getValue() + yawOffset.getValue() - rollOffset.getValue() );
-	setEnginePower( engines[2], (float)power + pitchOffset.getValue() - yawOffset.getValue() - rollOffset.getValue() );
-	setEnginePower( engines[3], (float)power + pitchOffset.getValue() + yawOffset.getValue() + rollOffset.getValue() );
-	delay(1);
+	Serial.print( "\tE1\t" );
+	setEnginePower( engines[0], power - pitchOffset.getValue() - yawOffset.getValue() + rollOffset.getValue() );
+	Serial.print( "\tE2\t" );
+	setEnginePower( engines[1], power - pitchOffset.getValue() + yawOffset.getValue() - rollOffset.getValue() );
+	Serial.print( "\tE3\t" );
+	setEnginePower( engines[2], power + pitchOffset.getValue() - yawOffset.getValue() - rollOffset.getValue() );
+	Serial.print( "\tE4\t" );
+	setEnginePower( engines[3], power + pitchOffset.getValue() + yawOffset.getValue() + rollOffset.getValue() );
+	Serial.println();
 }
 

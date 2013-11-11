@@ -27,7 +27,7 @@ class Engine
 		 *
 		 * @param power Engine power as 8-bit unsigned integer
 		 */
-		void setPower( uint8_t power );
+		void setPower( uint16_t power );
 
 		/**
 		 * Get the engine power

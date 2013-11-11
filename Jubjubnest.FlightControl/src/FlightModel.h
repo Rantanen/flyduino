@@ -61,7 +61,7 @@ class FlightModel
 		Quaternion orientation;
 
 		//! Inteded power
-		uint8_t power;
+		float power;
 
 		//! Intended heading
 		float controlYaw;

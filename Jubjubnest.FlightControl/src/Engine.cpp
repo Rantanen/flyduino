@@ -15,13 +15,12 @@ bool Engine::setup()
 	return true;
 }
 
-void Engine::setPower( uint8_t power )
+void Engine::setPower( uint16_t power )
 {
-	_power = power;
-	_servo.write( map(
-				constrain( power, 0, 200 ),
-				0, 255,
-				MIN_ESC_PWM_WIDTH, ESC_PWM_LIMIT ) );
+	power = map( constrain( power, 0, 750 ),
+			0, 1000,
+			MIN_ESC_PWM_WIDTH, ESC_PWM_LIMIT );
+	_servo.write( power );
 }
 
 
