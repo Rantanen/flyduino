@@ -37,7 +37,7 @@ unsigned long nextUpdate = 0;
 Diagnostics diag( DIAGNOSTIC_OUTPUT_RATE );
 #endif
 
-Radio radio( RADIO_SAMPLE_RATE );
+Radio radio;
 FlightModel flightModel;
 Engine engines[4] = {
 	Engine(5),  //  1, 1
@@ -78,7 +78,7 @@ void setup() {
 		if( !engines[i].setup() )
 			STOP_ERROR( "Failed to initialize engine");
 	}
-	unsigned long enginesZeroed = millis();
+	unsigned long enginesZeroed = millis() + ENGINE_ZERO_DELAY;
 
 	if( !PinStatus::setup() )
 		STOP_ERROR( "Failed to initialize pin change interrupts");
@@ -86,73 +86,71 @@ void setup() {
 	if( !imu.setup() || !imu.setupInterrupt() )
 		STOP_ERROR( "Failed to initialize IMU");
 
-	while( radio.channels[4]->raw < 750 || radio.channels[4]->raw > 2250 )
-		radio.sample( 0 );
+	// Wait for the TX to give valid values
+	while( !radio.update() ||
+			radio.channels[4]->raw < 750 ||
+			radio.channels[4]->raw > 2250 );
 
-	bool saved = false;
+	// If engines are turned on during startup,
+	// wait until engines are turned off and use
+	// this time to calibrate radio.
+	bool calibrated = false;
 
-#ifdef CALIBRATION
-	if( radio.channels[4]->raw < 1500  )
-	{
-		INFO_F( "Calibrating radio" );
-		digitalWrite( LED_PIN, HIGH );
-
-		int calibrationDone = 0;
-		while( calibrationDone < 100 )
-		{
-			radio.sample( 0 );
-
-			radio.calibrate();
-			if( radio.channels[4]->raw > 1500 )
-				calibrationDone++;
-			else
-				calibrationDone = 0;
-		}
-		digitalWrite( LED_PIN, LOW );
-
-		if( radio.channels[1]->raw > 1750 )
-		{
-			INFO_F( "Calibration done" );
-			radio.calibrationDone();
-			saved = true;
-		}
-		else
-		{
-			INFO_F( "Calibration not saved. Elevator was not up" );
-		}
-	}
-
-#endif
-	if( !saved )
-	{
-		radio.loadCalibration();
-	}
+	// Start with fast blinking
+	unsigned long calibrationStart = millis();
+	unsigned int blinkDelay = 100;
 
 	digitalWrite( LED_PIN, HIGH );
+	while( millis() < enginesZeroed || radio.channels[4]->raw < 1500 )
+	{
+		if( radio.update() && radio.channels[4]->raw < 1500 )
+		{
+			if( radio.channels[4]->raw > 0 )
+			{
+				calibrated = true;
+				radio.calibrate();
+			}
+			radio.update();
 
-	// Delay at least 250 millis to mark the led.
-	delay( 250 );
+		}
 
-	// Make sure we've delayed enough for the ESC to calibrate.
-	long engineDelay = (enginesZeroed + ENGINE_ZERO_DELAY) - millis();
-	if( engineDelay > 0 )
-		delay( engineDelay );
+		// Once the engines have been zeroed,
+		// continue with slow blinking.
+		if( enginesZeroed < millis() )
+			blinkDelay = 250;
 
-	digitalWrite( LED_PIN, LOW );
+		// Mark activity
+		digitalWrite( LED_PIN, ( (millis() - calibrationStart) / blinkDelay ) % 2 == 0 );
+		radio.update();
+	}
+
+	// If we calibrated, check whether elevator is turned up.
+	if( calibrated && radio.channels[1]->raw > 1750 )
+	{
+		// Elevator was up
+		//   -> this calibration was intended and should be saved.
+		//radio.calibrationDone();
+		INFO( "Calibration saved" );
+	}
+	else
+	{
+		// Calibration didn't happen or it did but elevator wasn't up
+		//   -> Ignore calibration and load old values.
+		radio.loadCalibration();
+		INFO( "Calibration loaded" );
+	}
 }
 
 void loop()
 {
-	unsigned long startms = millis();
-	unsigned long ms = startms;
-
-	if( radio.sample( ms ) )
+	if( radio.update() )
 	{
 		flightModel.updateHeading(
 				radio.channels[3]->value,
 				-radio.channels[1]->value,
 				-radio.channels[0]->value,
-				radio.channels[2]->value );
+				radio.channels[2]->value,
+				radio.channels[4]->value < 0 );
 	}
 
 	if( imu.readData() )
@@ -163,6 +161,6 @@ void loop()
 	flightModel.update();
 
 #ifdef DIAGNOSTICS
-	diag.report( ms );
+	diag.report( millis() );
 #endif
 }

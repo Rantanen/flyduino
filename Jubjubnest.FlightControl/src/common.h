@@ -7,7 +7,7 @@
  */
 
 //! Time required for the ESC to recognize 0-position.
-#define ENGINE_ZERO_DELAY 5500
+#define ENGINE_ZERO_DELAY 5000
 
 //! Maximum amount of engines supported
 #define MAX_ENGINES 8
@@ -33,8 +33,18 @@
 #define PID_ROLL_KI 0
 #define PID_ROLL_KD 0
 
+//! Yaw control gain
 #define YAW_CONTROL_GAIN 5
+
+//! Maximum power available to power stick (255 is maximum power).
+// Some reserve should be left for corrective actions at full power.
 #define MAX_CONTROL_POWER 200
+
+//! Amount of samples averaged for input channels
+#define CHANNEL_AVERAGE_SAMPLES 4
+
+//! Deadzone for the input channels
+#define CHANNEL_DEADZONE 0.01
 
 /************************
  * Radio configuration
@@ -78,7 +88,7 @@
 #define ERRORLEVEL 5
 
 //! Sensor diagnostic output
-#define DIAGNOSTICS
+// #define DIAGNOSTICS
 
 #define DIAGNOSTIC_OUTPUT_RATE 16
 #define SERIAL_RATE 115200

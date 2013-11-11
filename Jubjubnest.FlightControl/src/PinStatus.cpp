@@ -6,7 +6,8 @@
 uint8_t previousPins0 = 0;
 uint8_t previousPins1 = 0;
 unsigned long highStart[16];
-unsigned int pinValues[16];
+unsigned int pinValues[ 16 ][ CHANNEL_AVERAGE_SAMPLES ];
+uint8_t pinBufferIndex[ 16 ];
 
 // 3, 4, 7, 8, 11
 
@@ -33,7 +34,27 @@ bool PinStatus::setup()
 
 unsigned int PinStatus::getValue( uint8_t pin )
 {
-	return pinValues[ pin ];
+	unsigned long duration = 0;
+	uint8_t goodValues = 0;
+
+	for( uint8_t i = 0; i < CHANNEL_AVERAGE_SAMPLES; i++ )
+	{
+		unsigned long value = pinValues[ pin ][ i ];
+
+		// If this is a bad value, ignore it.
+		if( value < 750 || value > 2250 )
+			continue;
+
+		// Otherwise add it to the sum.
+		goodValues++;
+		duration += value;
+	}
+
+	// If there weren't enough good values, return 0.
+	if( goodValues < (CHANNEL_AVERAGE_SAMPLES / 2) )
+		return 0;
+
+	return duration / goodValues;
 }
 
 
@@ -52,7 +73,8 @@ inline void checkPin( uint8_t changedPins, uint8_t currentPins,
 		else
 		{
 			// Current pin just went down.
-			pinValues[ arduinoPin ] = us - highStart[ arduinoPin ];
+			pinValues[ arduinoPin ][ pinBufferIndex[ arduinoPin ]++ ] = us - highStart[ arduinoPin ];
+			pinBufferIndex[ arduinoPin ] %= CHANNEL_AVERAGE_SAMPLES;
 		}
 	}
 }
@@ -84,7 +106,6 @@ ISR( PCINT2_vect )
 
 	// We got the important bits. Enable interrupt.
 	sei();
-
 
 	uint8_t changedPins = previousPins1 ^ pins;
 	checkPin( changedPins, pins, 0, 0, us );

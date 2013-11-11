@@ -40,8 +40,6 @@ void Diagnostics::report( unsigned long ms )
 				DIAGLN( flightModel->orientation.w, 3 );
 				reports++;
 
-				digitalWrite( 13, flightModel->orientation.getMagnitude() > 1.05f );
-				
 				step++;
 				ALLOW_YIELD;
 

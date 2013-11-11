@@ -7,7 +7,8 @@
 #include "common.h"
 
 Channel::Channel( uint8_t pin ):
-	pin( pin ), offset( 0 ), minValue( 0 ), maxValue( 0 ), samples( 0 ), timeouts( 0 )
+	pin( pin ), offset( 0 ),
+	minValue( 0 ), maxValue( 0 ), samples( 0 ), timeouts( 0 )
 {
 	resetCalibration();
 }
@@ -38,27 +39,38 @@ void Channel::calibrationDone()
 	maxValue -= 20;
 }
 
-void Channel::update()
+bool Channel::update()
 {
 	unsigned long duration = PinStatus::getValue( pin );
+
+	// If the input data is bad (signal lost) set output to zero.
+	if( duration == 0 ) {
+		WARN( "Bad values." );
+		raw = 0;
+		value = 0;
+		return false;
+	}
+
 	raw = duration;
 
-	duration = constrain( duration, minValue, maxValue );
+	duration = constrain( raw, minValue, maxValue );
 	value = (float)(duration - minValue) / (maxValue - minValue) + offset;
 
 	if( value > 0 ) {
-		if( value < 0.05 )
+		if( value < CHANNEL_DEADZONE )
 			value = 0;
 		else
-			value -= 0.05;
+			value -= CHANNEL_DEADZONE;
 	}
 	else
 	{
-		if( value > -0.05 )
+		if( value > -CHANNEL_DEADZONE )
 			value = 0;
 		else
-			value += 0.05;
+			value += CHANNEL_DEADZONE;
 	}
+
+	return true;
 }
 
 void saveInt( unsigned int address, int value )

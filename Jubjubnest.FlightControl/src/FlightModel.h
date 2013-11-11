@@ -41,8 +41,16 @@ class FlightModel
 		 * @param pitch Pitch Euler angle
 		 * @param roll Roll Euler angle
 		 * @param power Average engine power
+		 * @param engineOn True if engines should be on
 		 */
-		void updateHeading( float yaw, float pitch, float roll, float power );
+		void updateHeading( float yaw, float pitch, float roll, float power, bool engineOn );
+
+		void setArmed( bool armed ) {
+			Serial.print( "Armed: " );
+			Serial.println( armed );
+			digitalWrite( LED_PIN, !armed );
+			this->armed = armed;
+		}
 
 		/**
 		 * Adjusts the flight values
@@ -60,6 +68,12 @@ class FlightModel
 
 		//! Intended yaw
 		float controlYaw;
+
+		//! True if the engine is on
+		bool engineOn;
+
+		//! True if the flight model is armed (able to fly)
+		bool armed;
 
 		//! Amount of engines present
 		int engineCount;

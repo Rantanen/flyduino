@@ -53,7 +53,7 @@ class Channel {
 		void resetCalibration();
 
 		//! Reads the input pin and updates the current channel value.
-		void update();
+		bool update();
 
 		/**
 		 * Saves the calibration range to EEPROM

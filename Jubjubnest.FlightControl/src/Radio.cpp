@@ -2,8 +2,8 @@
 #include "Radio.h"
 #include "debug.h"
 
-Radio::Radio( uint8_t sampleRate )
-	: sampleRate( sampleRate ), interval( 1000 / sampleRate ), channelCount( 0 ), nextSample( 0 )
+Radio::Radio()
+	: channelCount( 0 )
 {
 }
 
@@ -52,17 +52,15 @@ void Radio::loadCalibration()
 	}
 }
 
-bool Radio::sample( unsigned long currentMillis )
+bool Radio::update()
 {
-	if( currentMillis > 0 && currentMillis < nextSample ) return false;
-
+	int successful = 0;
 	for( int i = 0; i < channelCount; i++ )
 	{
-		channels[ i ]->update();
+		successful += channels[ i ]->update();
 	}
 
-	nextSample = currentMillis + interval;
-	return true;
+	return successful == channelCount;
 }
 
 

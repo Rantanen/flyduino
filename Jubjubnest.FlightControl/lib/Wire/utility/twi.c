@@ -134,7 +134,6 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
     if( twi_timeout(0) ) return -1;
     continue;
   }
-  digitalWrite(13, LOW);
 
   twi_state = TWI_MRX;
   twi_sendStop = sendStop;

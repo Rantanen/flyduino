@@ -20,7 +20,7 @@ class Radio
 		 *
 		 * @param sampleRate Intended sample rate for the radio control
 		 */
-		Radio( uint8_t sampleRate );
+		Radio();
 
 		/**
 		 * Destructor
@@ -57,9 +57,9 @@ class Radio
 		 * 
 		 * @param currentMillis Current time in milliseconds
 		 *
-		 * @returns True if the radio was sampled
+		 * @returns True if all channels were successfully updated
 		 */
-		bool sample( unsigned long currentMillis );
+		bool update();
 
 		/**
 		 * Channels controlled by this radio
@@ -67,23 +67,8 @@ class Radio
 		Channel* channels[ MAX_CHANNELS ];
 	private:
 
-		/**
-		 * Private non-default constructor to prevent default destructor
-		 */
-		Radio() {}
-
-		//! Intended sample rate
-		uint8_t sampleRate;
-
-		//! Interval between samples based on the sample rate
-		uint8_t interval;
-
 		//! Current channel count
 		uint8_t channelCount;
-
-		//! Time treshold for the next sample
-		unsigned long nextSample;
-
 };
 
 #endif // _RADIO_H_
