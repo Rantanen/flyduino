@@ -21,24 +21,26 @@
 // X_X_KI - Integral gain
 // X_X_KD - Derivative gain
 
-#define PID_YAW_KP 30
+#define PID_YAW_KP 50
 #define PID_YAW_KI 0
 #define PID_YAW_KD 0
 
-#define PID_PITCH_KP 30
-#define PID_PITCH_KI 0
-#define PID_PITCH_KD 0
+#define PID_PITCH_KP 120
+#define PID_PITCH_KI 0.002
+#define PID_PITCH_KD 0 //300
 
-#define PID_ROLL_KP 30
-#define PID_ROLL_KI 0
-#define PID_ROLL_KD 0
+#define PID_ROLL_KP 120
+#define PID_ROLL_KI 0.002
+#define PID_ROLL_KD 0 //300
 
 //! Yaw control gain
 #define YAW_CONTROL_GAIN 5
 
 //! Maximum power available to power stick (255 is maximum power).
 // Some reserve should be left for corrective actions at full power.
-#define MAX_CONTROL_POWER 200
+#define MAX_CONTROL_POWER 750
+
+#define MIN_CONTROL_POWER 250
 
 //! Amount of samples averaged for input channels
 #define CHANNEL_AVERAGE_SAMPLES 4
@@ -85,7 +87,7 @@
  * 4 - Include Info-level tracing
  * 5 - Include Debug-level tracing
  */
-#define ERRORLEVEL 5
+#define ERRORLEVEL 3
 
 //! Sensor diagnostic output
 // #define DIAGNOSTICS

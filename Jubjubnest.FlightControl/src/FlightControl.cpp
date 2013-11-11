@@ -143,6 +143,45 @@ void setup() {
 
 void loop()
 {
+	while( Serial.available() > 0 )
+	{
+		char c = Serial.read();
+		switch( c )
+		{
+			case '1':
+				flightModel.pitchOffset.Kp += 1;
+				flightModel.rollOffset.Kp += 1;
+				break;
+			case '2':
+				flightModel.pitchOffset.Ki += 0.001;
+				flightModel.rollOffset.Ki += 0.001;
+				break;
+			case '3':
+				flightModel.pitchOffset.Kd += 1;
+				flightModel.rollOffset.Kd += 1;
+				break;
+			case 'q':
+				flightModel.pitchOffset.Kp -= 1;
+				flightModel.rollOffset.Kp -= 1;
+				break;
+			case 'w':
+				flightModel.pitchOffset.Ki -= 0.001;
+				flightModel.rollOffset.Ki -= 0.001;
+				break;
+			case 'e':
+				flightModel.pitchOffset.Kd -= 1;
+				flightModel.rollOffset.Kd -= 1;
+				break;
+		}
+
+		Serial.print( "PID:\t" );
+		Serial.print( flightModel.pitchOffset.Kp );
+		Serial.print( "\t" );
+		Serial.print( flightModel.pitchOffset.Ki, 4 );
+		Serial.print( "\t" );
+		Serial.println( flightModel.pitchOffset.Kd );
+	}
+
 	if( radio.update() )
 	{
 		flightModel.updateHeading(

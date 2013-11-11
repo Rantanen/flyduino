@@ -31,12 +31,21 @@ class PID
 			float delta = (timestamp - lastUpdate) / 1000000.0f;
 
 			Pe = Kp * value;
-			Ie += Ki * value * delta;
 			De = Kd * value / delta;
+
+			if( Pe + De < 25 )
+			{
+				Ie = constrain( Ie + Ki * value * delta, -10, 10 );
+			}
+			else
+			{
+				Ie *= 0.99;
+			}
 		}
 
 		void resetError()
 		{
+			lastUpdate = micros();
 			Ie = 0;
 		}
 
