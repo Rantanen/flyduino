@@ -60,14 +60,13 @@ class FlightModel
 		//! Orientation
 		Quaternion orientation;
 
-		//! Intended vehicle heading
-		Quaternion heading;
-
 		//! Inteded power
 		uint8_t power;
 
-		//! Intended yaw
+		//! Intended heading
 		float controlYaw;
+		float controlPitch;
+		float controlRoll;
 
 		//! True if the engine is on
 		bool engineOn;

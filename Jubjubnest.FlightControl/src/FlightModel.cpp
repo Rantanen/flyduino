@@ -5,7 +5,9 @@
 #include "Diagnostics.h"
 
 FlightModel::FlightModel()
-	: orientation(1,0,0,0), heading(1,0,0,0), power(0), controlYaw(0), engineOn(false), armed(true),
+	: orientation(1,0,0,0),
+		power(0), controlYaw(0), controlPitch(0), controlRoll(0),
+		engineOn(false), armed(true),
 		engineCount(0), lastUpdate(0),
 		yaw( 0 ), pitch( 0 ), roll( 0 ),
 		yawOffset( PID_YAW_KP, PID_YAW_KI, PID_YAW_KD ),
@@ -55,10 +57,8 @@ void FlightModel::updateHeading( float yaw, float pitch, float roll, float power
 		controlYaw += YAW_CONTROL_GAIN * (yaw * (currentTime - lastHeadingUpdate) / 1000000.0f);
 	}
 
-	heading.w = cos(roll/2)*cos(pitch/2)*cos(controlYaw/2) + sin(roll/2)*sin(pitch/2)*sin(controlYaw/2);
-	heading.x = sin(roll/2)*cos(pitch/2)*cos(controlYaw/2) - cos(roll/2)*sin(pitch/2)*sin(controlYaw/2);
-	heading.y = cos(roll/2)*sin(pitch/2)*cos(controlYaw/2) + sin(roll/2)*cos(pitch/2)*sin(controlYaw/2);
-	heading.z = cos(roll/2)*cos(pitch/2)*sin(controlYaw/2) - sin(roll/2)*sin(pitch/2)*cos(controlYaw/2);
+	this->controlPitch = pitch;
+	this->controlRoll = roll;
 
 	this->power = power * MAX_CONTROL_POWER;
 	this->engineOn = engineOn;
@@ -96,16 +96,17 @@ void FlightModel::update()
 
 	unsigned long currentTime = micros();
 
-	Quaternion difference = heading.getProduct( orientation.getConjugate() );
+	Quaternion yawRotation( cos( controlYaw / 2 ), 0, 0, sin( controlYaw / 2 ) );
+	Quaternion yawDifference = yawRotation.getProduct( orientation.getConjugate() );
 
-	roll = atan2(
-				2*(difference.w*difference.x + difference.y*difference.z),
-			1 - 2*(difference.x*difference.x + difference.y*difference.y) );
-	pitch = asin(
-			2*(difference.w*difference.y - difference.z*difference.x) );
 	yaw = atan2(
-				2*(difference.w*difference.z + difference.x*difference.y),
-			1 - 2*(difference.y*difference.y + difference.z*difference.z) );
+				2*(yawDifference.w*yawDifference.z + yawDifference.x*yawDifference.y),
+			1 - 2*(yawDifference.y*yawDifference.y + yawDifference.z*yawDifference.z) );
+	roll = controlRoll - atan2(
+				2*(orientation.w*orientation.x + orientation.y*orientation.z),
+			1 - 2*(orientation.x*orientation.x + orientation.y*orientation.y) );
+	pitch = controlPitch - asin(
+			2*(orientation.w*orientation.y - orientation.z*orientation.x) );
 
 	/*
 	Serial.print( yaw, 6 );
