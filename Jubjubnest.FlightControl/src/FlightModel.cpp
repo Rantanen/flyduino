@@ -65,12 +65,18 @@ void FlightModel::updateHeading( float yaw, float pitch, float roll, float power
 
 	// If we're not armed but engines were turned on, arm.
 	// Also require that throttle is at zero.
-	if( !armed && engineOn && power == 0 )
+	if( !armed && engineOn )
 	{
-		yawOffset.resetError();
-		pitchOffset.resetError();
-		rollOffset.resetError();
-		setArmed( true );
+		// If the engine is arming, keep blinking the led.
+		digitalWrite( LED_PIN, ( millis() / 100 ) % 2 == 0 );
+
+		if( power == 0 )
+		{
+			yawOffset.resetError();
+			pitchOffset.resetError();
+			rollOffset.resetError();
+			setArmed( true );
+		}
 	}
 
 	lastHeadingUpdate = currentTime;
@@ -100,6 +106,8 @@ void FlightModel::update()
 
 	unsigned long currentTime = micros();
 
+	// Euler angles. :(
+	// TODO: Figure out how to work with quaternions properly.
 	Quaternion yawRotation( cos( controlYaw / 2 ), 0, 0, sin( controlYaw / 2 ) );
 	Quaternion yawDifference = yawRotation.getProduct( orientation.getConjugate() );
 
