@@ -1855,8 +1855,10 @@ int16_t MPU6050::getTemperature() {
  * @see getMotion6()
  * @see MPU6050_RA_GYRO_XOUT_H
  */
-void MPU6050::getRotation(int16_t* x, int16_t* y, int16_t* z) {
-    I2Cdev::readBytes(devAddr, MPU6050_RA_GYRO_XOUT_H, 6, buffer);
+bool MPU6050::getRotation(int16_t* x, int16_t* y, int16_t* z) {
+    if( I2Cdev::readBytes(devAddr, MPU6050_RA_GYRO_XOUT_H, 6, buffer) < 0 )
+		return false;
+
     *x = (((int16_t)buffer[0]) << 8) | buffer[1];
     *y = (((int16_t)buffer[2]) << 8) | buffer[3];
     *z = (((int16_t)buffer[4]) << 8) | buffer[5];

@@ -61,7 +61,7 @@ static volatile uint8_t twi_rxBufferIndex;
 static volatile uint8_t twi_error;
 
 static volatile uint8_t twState;
-static uint32_t twi_timeoutc;
+static uint16_t twi_timeoutc;
 
 /* 
  * Function twi_init
@@ -131,7 +131,7 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
   // wait until twi is ready, become master receiver
   twi_timeout(1);
   while(TWI_READY != twi_state){
-    if( twi_timeout(0) ) return -1;
+    if( twi_timeout(0) ) return 0;
     continue;
   }
 
@@ -172,7 +172,7 @@ uint8_t twi_readFrom(uint8_t address, uint8_t* data, uint8_t length, uint8_t sen
   // wait for read operation to complete
   twi_timeout(1);
   while(TWI_MRX == twi_state){
-    if( twi_timeout(0) ) return -1;
+    if( twi_timeout(0) ) return 0;
     continue;
   }
 
@@ -389,9 +389,7 @@ void twi_releaseBus(void)
 uint8_t twi_timeout(uint8_t ini)
 {
 	if (ini) twi_timeoutc=0; else twi_timeoutc++;	
-	if (twi_timeoutc>=100000UL) {
-		serial_print_c('@');
-		serial_print_c('\n');
+	if (twi_timeoutc>=1000) {
 		twi_timeoutc=0;
 		twi_init();
 		return 1;

@@ -587,7 +587,7 @@ class MPU6050 {
         int16_t getTemperature();
 
         // GYRO_*OUT_* registers
-        void getRotation(int16_t* x, int16_t* y, int16_t* z);
+        bool getRotation(int16_t* x, int16_t* y, int16_t* z);
         int16_t getRotationX();
         int16_t getRotationY();
         int16_t getRotationZ();

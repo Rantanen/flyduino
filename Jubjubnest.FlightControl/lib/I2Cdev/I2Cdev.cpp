@@ -267,16 +267,12 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
             for (uint8_t k = 0; k < length; k += min(length, BUFFER_LENGTH)) {
                 Wire.beginTransmission(devAddr);
                 Wire.write(regAddr);
-                if( Wire.endTransmission() ) {
-					count = -1;
-					break;
-				}
+                if( Wire.endTransmission() )
+                    return -1;
 
                 Wire.beginTransmission(devAddr);
-                if( Wire.requestFrom(devAddr, (uint8_t)min(length - k, BUFFER_LENGTH)) < 0 ) {
-					count = -1;
-					break;
-				}
+                if( Wire.requestFrom(devAddr, (uint8_t)min(length - k, BUFFER_LENGTH)) == 0 )
+                    return -1;
         
                 for (; Wire.available() && (timeout == 0 || millis() - t1 < timeout); count++) {
                     data[count] = Wire.read();
@@ -407,8 +403,8 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
                 Wire.write(regAddr);
                 if( Wire.endTransmission() ) return -1;
                 Wire.beginTransmission(devAddr);
-                if( Wire.requestFrom(devAddr, (uint8_t)(length * 2)) < 0 ) // length=words, this wants bytes
-					return -1;
+                if( Wire.requestFrom(devAddr, (uint8_t)(length * 2)) == 0 ) // length=words, this wants bytes
+                    return -1;
         
                 bool msb = true; // starts with MSB, then LSB
                 for (; Wire.available() && count < length && (timeout == 0 || millis() - t1 < timeout);) {
