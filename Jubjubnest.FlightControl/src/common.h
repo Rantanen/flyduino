@@ -11,6 +11,7 @@
 
 //! Maximum amount of engines supported
 #define MAX_ENGINES 8
+#define MAX_CHANNELS 7
 
 #define MIN_ESC_PWM_WIDTH 1000
 #define ESC_PWM_LIMIT 2000

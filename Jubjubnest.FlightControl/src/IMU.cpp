@@ -97,7 +97,7 @@ bool IMU::readData()
 	// Check for overflow
 	int8_t result;
 
-	if( !interruptFlag ) { return false; }
+	if( !interruptFlag ) { return true; }
 
 	fifoCount = mpu->getFIFOCount( &result );
 	if( result < 0 ) return false;
@@ -121,7 +121,7 @@ bool IMU::readData()
 	}
 
 	// Wait for there to be enough packets.
-	if( fifoCount < fifoPacketSize || (mpuIntStatus & 0x02) == 0 ) return false;
+	if( fifoCount < fifoPacketSize || (mpuIntStatus & 0x02) == 0 ) return true;
 	interruptFlag = false;
 
 	// There's enough fifo bytes and the packet should be ready, but we're mis-aligned.

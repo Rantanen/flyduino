@@ -3,8 +3,7 @@
 #define _RADIO_H_
 
 #include "arduino.h"
-
-#define MAX_CHANNELS 7
+#include "common.h"
 
 #include "Channel.h"
 

@@ -31,8 +31,6 @@ int main(void)
 	return 0;
 }
 
-unsigned long nextUpdate = 0;
-
 #ifdef DIAGNOSTICS
 Diagnostics diag( DIAGNOSTIC_OUTPUT_RATE );
 #endif
@@ -61,11 +59,11 @@ void setup() {
 
 	digitalWrite( LED_PIN, LOW );
 
-	radio.addChannel( CHN1, -0.5 );
-	radio.addChannel( CHN2, -0.5 );
-	radio.addChannel( CHN3, 0 );
-	radio.addChannel( CHN4, -0.5 );
-	radio.addChannel( CHN5, -0.5 );
+	radio.addChannel( 0, -0.5 );
+	radio.addChannel( 1, -0.5 );
+	radio.addChannel( 2, 0 );
+	radio.addChannel( 3, -0.5 );
+	radio.addChannel( 4, -0.5 );
 
 #ifdef DIAGNOSTICS
 	diag.setFlightModel( &flightModel );
