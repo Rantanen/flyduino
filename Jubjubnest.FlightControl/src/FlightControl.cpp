@@ -35,16 +35,12 @@ int main(void)
 Diagnostics diag( DIAGNOSTIC_OUTPUT_RATE );
 #endif
 
-Radio radio;
-FlightModel flightModel;
 Engine engines[4] = {
 	Engine(5),  //  1, 1
 	Engine(6),  //  1,-1
 	Engine(9),  // -1,-1
 	Engine(10)  // -1, 1
 };
-
-IMU imu;
 
 #define STOP_ERROR( msg ) { ERROR_F( msg ); while( true ); }
 
@@ -59,82 +55,67 @@ void setup() {
 
 	digitalWrite( LED_PIN, LOW );
 
-	radio.addChannel( 0, -0.5 );
-	radio.addChannel( 1, -0.5 );
-	radio.addChannel( 2, 0 );
-	radio.addChannel( 3, -0.5 );
-	radio.addChannel( 4, -0.5 );
-
-#ifdef DIAGNOSTICS
-	diag.setFlightModel( &flightModel );
-#endif
+	Radio.addChannel( 0, -0.5 );
+	Radio.addChannel( 1, -0.5 );
+	Radio.addChannel( 2, 0 );
+	Radio.addChannel( 3, -0.5 );
+	Radio.addChannel( 4, -0.5 );
 
 	// Setup the engines first to reset the channels for ECM
 	for( int i = 0; i < 4; i++ )
 	{
-		flightModel.addEngine( &engines[i] );
+		FlightModel.addEngine( &engines[i] );
 		if( !engines[i].setup() )
 			STOP_ERROR( "Failed to initialize engine");
 	}
-	unsigned long enginesZeroed = millis() + ENGINE_ZERO_DELAY;
 
 	if( !PinStatus::setup() )
 		STOP_ERROR( "Failed to initialize pin change interrupts");
 
-	if( !imu.setup() || !imu.setupInterrupt() )
+	if( !IMU.setup() || !IMU.setupInterrupt() )
 		STOP_ERROR( "Failed to initialize IMU");
 
 	// Wait for the TX to give valid values
-	while( !radio.update() ||
-			radio.channels[4]->raw < 750 ||
-			radio.channels[4]->raw > 2250 );
+	while( !Radio.update() ||
+			Radio.channels[4]->raw < 750 ||
+			Radio.channels[4]->raw > 2250 );
 
-	// If engines are turned on during startup,
-	// wait until engines are turned off and use
-	// this time to calibrate radio.
-	bool calibrated = false;
-
-	// Start with fast blinking
-	unsigned long calibrationStart = millis();
-	unsigned int blinkDelay = 100;
-
-	digitalWrite( LED_PIN, HIGH );
-	while( millis() < enginesZeroed || radio.channels[4]->raw < 1500 )
+	// If elevator is pulled down when the thing is reset, enter calibration mode.
+	bool calibrationSaved = false;
+	if( Radio.channels[1]->raw < 1300 )
 	{
-		if( radio.update() && radio.channels[4]->raw < 1500 )
+		unsigned long canExitCalibration = millis() + 4000;
+		
+		while( millis() < canExitCalibration )
 		{
-			if( radio.channels[4]->raw > 0 )
-			{
-				calibrated = true;
-				radio.calibrate();
-			}
-			radio.update();
+			blink( 100 );
+			Radio.update();
+			Radio.calibrate();
 
+			// When the elevator isn't centered, postpone the calibration ending.
+			if( Radio.channels[1]->raw < 1400 || Radio.channels[1]->raw > 1600 )
+				canExitCalibration = millis() + 4000;
 		}
 
-		// Once the engines have been zeroed,
-		// continue with slow blinking.
-		if( enginesZeroed < millis() )
-			blinkDelay = 250;
+		// Now allow for 1 second for the user to make a choice whether to save values or not.
+		delay( 1000 );
 
-		// Mark activity
-		digitalWrite( LED_PIN, ( (millis() - calibrationStart) / blinkDelay ) % 2 == 0 );
-		radio.update();
+		Radio.update();
+		if( Radio.channels[1]->raw > 1700 )
+		{
+			// Elevator was up
+			//   -> this calibration was intended and should be saved.
+			Radio.calibrationDone();
+			INFO( "Calibration saved" );
+			calibrationSaved = true;
+		}
 	}
 
-	// If we calibrated, check whether elevator is turned up.
-	if( calibrated && radio.channels[1]->raw > 1750 )
-	{
-		// Elevator was up
-		//   -> this calibration was intended and should be saved.
-		//radio.calibrationDone();
-		INFO( "Calibration saved" );
-	}
-	else
+	if( !calibrationSaved )
 	{
 		// Calibration didn't happen or it did but elevator wasn't up
 		//   -> Ignore calibration and load old values.
-		radio.loadCalibration();
+		Radio.loadCalibration();
 		INFO( "Calibration loaded" );
 	}
 }
@@ -147,55 +128,55 @@ void loop()
 		switch( c )
 		{
 			case '1':
-				flightModel.pitchOffset.Kp += 1;
-				flightModel.rollOffset.Kp += 1;
+				FlightModel.pitchOffset.Kp += 1;
+				FlightModel.rollOffset.Kp += 1;
 				break;
 			case '2':
-				flightModel.pitchOffset.Ki += 0.001;
-				flightModel.rollOffset.Ki += 0.001;
+				FlightModel.pitchOffset.Ki += 0.001;
+				FlightModel.rollOffset.Ki += 0.001;
 				break;
 			case '3':
-				flightModel.pitchOffset.Kd += 1;
-				flightModel.rollOffset.Kd += 1;
+				FlightModel.pitchOffset.Kd += 1;
+				FlightModel.rollOffset.Kd += 1;
 				break;
 			case 'q':
-				flightModel.pitchOffset.Kp -= 1;
-				flightModel.rollOffset.Kp -= 1;
+				FlightModel.pitchOffset.Kp -= 1;
+				FlightModel.rollOffset.Kp -= 1;
 				break;
 			case 'w':
-				flightModel.pitchOffset.Ki -= 0.001;
-				flightModel.rollOffset.Ki -= 0.001;
+				FlightModel.pitchOffset.Ki -= 0.001;
+				FlightModel.rollOffset.Ki -= 0.001;
 				break;
 			case 'e':
-				flightModel.pitchOffset.Kd -= 1;
-				flightModel.rollOffset.Kd -= 1;
+				FlightModel.pitchOffset.Kd -= 1;
+				FlightModel.rollOffset.Kd -= 1;
 				break;
 		}
 
 		Serial.print( "PID:\t" );
-		Serial.print( flightModel.pitchOffset.Kp );
+		Serial.print( FlightModel.pitchOffset.Kp );
 		Serial.print( "\t" );
-		Serial.print( flightModel.pitchOffset.Ki, 4 );
+		Serial.print( FlightModel.pitchOffset.Ki, 4 );
 		Serial.print( "\t" );
-		Serial.println( flightModel.pitchOffset.Kd );
+		Serial.println( FlightModel.pitchOffset.Kd );
 	}
 
-	if( radio.update() )
+	if( Radio.update() )
 	{
-		flightModel.updateHeading(
-				radio.channels[3]->value,
-				-radio.channels[1]->value,
-				-radio.channels[0]->value,
-				radio.channels[2]->value,
-				radio.channels[4]->value < 0 );
+		FlightModel.updateHeading(
+				Radio.channels[3]->value,
+				-Radio.channels[1]->value,
+				-Radio.channels[0]->value,
+				Radio.channels[2]->value,
+				Radio.channels[4]->value < 0 );
 	}
 
-	if( imu.readData() )
+	if( IMU.readData() )
 	{
-		flightModel.updateOrientation( &imu.orientation );
+		FlightModel.updateOrientation( &IMU.orientation );
 	}
 
-	flightModel.update();
+	FlightModel.update();
 
 #ifdef DIAGNOSTICS
 	diag.report( millis() );

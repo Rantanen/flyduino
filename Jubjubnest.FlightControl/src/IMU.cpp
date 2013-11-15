@@ -13,8 +13,10 @@
 
 #define UINT16_MAX 0xffff
 
+_IMU IMU;
+
 namespace IMUInterrupt {
-	IMU* registeredIMU = 0;
+	_IMU* registeredIMU = 0;
 	void interruptHandler()
 	{
 		if( registeredIMU != 0 )
@@ -24,11 +26,11 @@ namespace IMUInterrupt {
 	}
 }
 
-IMU::IMU(): mpu( new MPU6050() )
+_IMU::_IMU(): mpu( new MPU6050() )
 {
 }
 
-bool IMU::setup()
+bool _IMU::setup()
 {
 	Wire.begin();
 	TWBR = 24;
@@ -74,7 +76,7 @@ bool IMU::setup()
 	return true;
 }
 
-bool IMU::setupInterrupt()
+bool _IMU::setupInterrupt()
 {
 	if( IMUInterrupt::registeredIMU != 0 ) {
 		IMUInterrupt::registeredIMU->hasInterruptHandler = false;
@@ -87,7 +89,7 @@ bool IMU::setupInterrupt()
 	return true;
 }
 
-bool IMU::readData()
+bool _IMU::readData()
 {
 	if( (lastRead != UINT16_MAX) && (millis() > (lastRead + 1000) ) ) {
 		lastRead = UINT16_MAX;

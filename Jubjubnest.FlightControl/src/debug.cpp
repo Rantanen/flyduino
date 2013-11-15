@@ -41,3 +41,8 @@ void __endError()
 }
 
 #endif
+
+void blink( uint16_t pulseLength )
+{
+	digitalWrite( LED_PIN, ( millis() / pulseLength ) % 2 == 0 );
+}

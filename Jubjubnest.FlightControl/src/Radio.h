@@ -10,7 +10,7 @@
 /**
  * Radio control for sampling the radio input
  */
-class Radio
+class _Radio
 {
 	public:
 
@@ -19,12 +19,12 @@ class Radio
 		 *
 		 * @param sampleRate Intended sample rate for the radio control
 		 */
-		Radio();
+		_Radio();
 
 		/**
 		 * Destructor
 		 */
-		~Radio();
+		~_Radio();
 
 		/**
 		 * Adds channel specification to the radio control
@@ -69,5 +69,7 @@ class Radio
 		//! Current channel count
 		uint8_t channelCount;
 };
+
+extern _Radio Radio;
 
 #endif // _RADIO_H_

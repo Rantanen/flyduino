@@ -12,13 +12,13 @@ class MPU6050;
 /**
  * Wrapper for the MPU6050 sampling
  */
-class IMU
+class _IMU
 {
 	public:
 		/**
 		 * Constructor
 		 */
-		IMU();
+		_IMU();
 
 		/**
 		 * Setup routine for the IMU module
@@ -62,6 +62,8 @@ class IMU
 		//! Stores the time in milliseconds when the FIFO was read last.
 		unsigned long lastRead;
 };
+
+extern _IMU IMU;
 
 #endif // _IMU_H_
 

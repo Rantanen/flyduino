@@ -13,10 +13,10 @@
  *
  * Tracks all the sensory inputs for the vehicle.
  */
-class FlightModel
+class _FlightModel
 {
 	public:
-		FlightModel();
+		_FlightModel();
 
 		/**
 		 * Adds a new engine record to the flight model
@@ -91,5 +91,7 @@ class FlightModel
 		PID pitchOffset;
 		PID rollOffset;
 };
+
+extern _FlightModel FlightModel;
 
 #endif // _FLIGHTMODEL_H_

@@ -101,4 +101,6 @@ void __endError();
 #define TRACE_END()
 #endif
 
+void blink( uint16_t pulseLength );
+
 #endif // DEBUG_H

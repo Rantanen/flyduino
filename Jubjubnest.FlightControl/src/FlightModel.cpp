@@ -4,7 +4,9 @@
 #include "debug.h"
 #include "Diagnostics.h"
 
-FlightModel::FlightModel()
+_FlightModel FlightModel;
+
+_FlightModel::_FlightModel()
 	: orientation(1,0,0,0),
 		power(0), controlYaw(0), controlPitch(0), controlRoll(0),
 		engineOn(false), armed(true),
@@ -19,18 +21,18 @@ FlightModel::FlightModel()
 	}
 }
 
-void FlightModel::addEngine( Engine* engine )
+void _FlightModel::addEngine( Engine* engine )
 {
 	engines[ engineCount ] = engine;
 	engineCount++;
 }
 
-void FlightModel::updateOrientation( const Quaternion *orientation )
+void _FlightModel::updateOrientation( const Quaternion *orientation )
 {
 	this->orientation = *orientation;
 }
 
-void FlightModel::updateHeading( float yaw, float pitch, float roll, float power, bool engineOn )
+void _FlightModel::updateHeading( float yaw, float pitch, float roll, float power, bool engineOn )
 {
 	// If this is first cycle, we have no basis for delta
 	//  -> Set start point and return
@@ -88,7 +90,7 @@ void setEnginePower( Engine* engine, float power )
 	//engine->setPower( constrain( power, 0, 1000 ) );
 }
 
-void FlightModel::update()
+void _FlightModel::update()
 {
 	if( !armed ) return;
 

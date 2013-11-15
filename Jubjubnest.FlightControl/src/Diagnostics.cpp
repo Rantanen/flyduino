@@ -1,5 +1,6 @@
 
 #include "Diagnostics.h"
+#include "FlightModel.h"
 #include "debug.h"
 
 #define ALLOW_YIELD if( millis() > treshold ) \
@@ -9,13 +10,8 @@
 }
 
 Diagnostics::Diagnostics( uint16_t updateInterval )
-	: interval( updateInterval ), nextUpdate( 0 ), engineStep( 0 ), step( 0 ), flightModel( 0 )
+	: interval( updateInterval ), nextUpdate( 0 ), engineStep( 0 ), step( 0 )
 {
-}
-
-void Diagnostics::setFlightModel( FlightModel* model )
-{
-	flightModel = model;
 }
 
 void Diagnostics::report( unsigned long ms )
@@ -34,10 +30,10 @@ void Diagnostics::report( unsigned long ms )
 		{
 			case 1:
 				DIAG( "ROT" );
-				DIAG( flightModel->orientation.x, 3 );
-				DIAG( flightModel->orientation.y, 3 );
-				DIAG( flightModel->orientation.z, 3 );
-				DIAGLN( flightModel->orientation.w, 3 );
+				DIAG( FlightModel.orientation.x, 3 );
+				DIAG( FlightModel.orientation.y, 3 );
+				DIAG( FlightModel.orientation.z, 3 );
+				DIAGLN( FlightModel.orientation.w, 3 );
 				reports++;
 
 				step++;
@@ -46,10 +42,10 @@ void Diagnostics::report( unsigned long ms )
 			case 2:
 
 				DIAG( "HEAD" );
-				DIAG( flightModel->heading.x, 3 );
-				DIAG( flightModel->heading.y, 3 );
-				DIAG( flightModel->heading.z, 3 );
-				DIAGLN( flightModel->heading.w, 3 );
+				DIAG( FlightModel.heading.x, 3 );
+				DIAG( FlightModel.heading.y, 3 );
+				DIAG( FlightModel.heading.z, 3 );
+				DIAGLN( FlightModel.heading.w, 3 );
 				reports++;
 
 				step++;
@@ -58,9 +54,9 @@ void Diagnostics::report( unsigned long ms )
 			case 3:
 				
 				DIAG( "OFFSET" );
-				DIAG( flightModel->yaw, 3 );
-				DIAG( flightModel->pitch, 3 );
-				DIAGLN( flightModel->roll, 3 );
+				DIAG( FlightModel.yaw, 3 );
+				DIAG( FlightModel.pitch, 3 );
+				DIAGLN( FlightModel.roll, 3 );
 				reports++;
 
 				step++;
@@ -69,11 +65,11 @@ void Diagnostics::report( unsigned long ms )
 
 			case 4:
 
-				while( engineStep < flightModel->engineCount )
+				while( engineStep < FlightModel.engineCount )
 				{
 					DIAG( "ENG" );
-					DIAG( flightModel->engines[ engineStep ]->getPin() );
-					DIAGLN( flightModel->engines[ engineStep ]->getPower() );
+					DIAG( FlightModel.engines[ engineStep ]->getPin() );
+					DIAGLN( FlightModel.engines[ engineStep ]->getPower() );
 					reports++;
 
 					engineStep++;

@@ -2,12 +2,14 @@
 #include "Radio.h"
 #include "debug.h"
 
-Radio::Radio()
+_Radio Radio;
+
+_Radio::_Radio()
 	: channelCount( 0 )
 {
 }
 
-Radio::~Radio()
+_Radio::~_Radio()
 {
 	for( uint8_t i = 0; i < channelCount; i++ )
 	{
@@ -15,14 +17,14 @@ Radio::~Radio()
 	}
 }
 
-void Radio::addChannel( int pin, float offset )
+void _Radio::addChannel( int pin, float offset )
 {
 	channels[ channelCount ] = new Channel( pin, offset );
 	pinMode( pin, INPUT );
 	channelCount++;
 }
 
-void Radio::calibrate()
+void _Radio::calibrate()
 {
 	while( Serial.available() && Serial.read() );
 	for( uint8_t i = 0; i < channelCount; i++ )
@@ -31,7 +33,7 @@ void Radio::calibrate()
 	}
 }
 
-void Radio::calibrationDone()
+void _Radio::calibrationDone()
 {
 	INFO( "Radio ranges by channel:" );
 	for( uint8_t i = 0; i < channelCount; i++ )
@@ -42,7 +44,7 @@ void Radio::calibrationDone()
 	}
 }
 
-void Radio::loadCalibration()
+void _Radio::loadCalibration()
 {
 	INFO( "Radio ranges by channel:" );
 	for( uint8_t i = 0; i < channelCount; i++ )
@@ -52,7 +54,7 @@ void Radio::loadCalibration()
 	}
 }
 
-bool Radio::update()
+bool _Radio::update()
 {
 	int successful = 0;
 	for( int i = 0; i < channelCount; i++ )
