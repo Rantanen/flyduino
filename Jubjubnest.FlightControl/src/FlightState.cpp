@@ -24,7 +24,7 @@ void _FlightState::update()
 			break;
 
 		case eFlightStateArmed:
-			if( checkArmedToOff() );
+			if( checkArmedToOff() )
 				changeState( eFlightStateOff, 0 );
 			break;
 	}
@@ -40,22 +40,22 @@ void _FlightState::updateChannelTimes()
 
 	// As long as the throttle isn't idling,
 	// push the idle start to the future.
-	if( throttle->raw > throttle->calibrationData.minValue + 50 )
-		throttleIdleStart = ms + 1000;
+	if( throttle->raw > throttle->calibrationData.minValue + 20)
+		throttleIdleStart = ms + 10;
 
 	Channel* yaw = Radio.channels[3];
 
 	// Same for yaw left/right
-	if( yaw->raw > yaw->calibrationData.minValue + 50 )
-		yawLeftStart = ms + 1000;
-	if( yaw->raw < yaw->calibrationData.maxValue - 50 )
-		yawRightStart = ms + 1000;
+	if( yaw->value > -0.45 )
+		yawLeftStart = ms + 10;
+	if( yaw->value < 0.45 )
+		yawRightStart = ms + 10;
+
 }
 
 bool _FlightState::checkOffToArmed()
 {
 	uint32_t ms = millis();
-	float throttle = Radio.channels[2]->value;
 
 	// Make sure throttle is down and yaw is right (up)
 	if( throttleIdleStart > ms || yawRightStart > ms )
@@ -77,23 +77,29 @@ bool _FlightState::checkOffToArmed()
 bool _FlightState::checkArmedToOff()
 {
 	uint32_t ms = millis();
-	float throttle = Radio.channels[2]->value;
 
 	// Make sure throttle is down
 	if( throttleIdleStart > ms )
 	{
-		digitalWrite( LED_PIN, LOW );
+		// Throttle is up and we're armed.
+		// -> Light up led as a warning.
+		// 		(You know.. in case the rotating propellers aren't enough)
+		digitalWrite( LED_PIN, HIGH );
 		return false;
 	}
+
 	// Check whether engine has been idle long enough.
 	if( ms > throttleIdleStart + STATE_CHANGE_TIME_OFF_ON_IDLE_THROTTLE )
 	{
 		return true;
 	}
 
-	// Blink here anyway for funs. Sure it'll light up the led a bit too much in some
-	// cases, but that's for few microseconds and saves us some code size.
-	blink(500);
+	// If yaw isn't left, blink slowly.
+	if( yawLeftStart > ms )
+	{
+		blink(500);
+		return false;
+	}
 
 	// Engine hasn't idled long enough. Check whether throttle/yaw combo tells
 	// us to disarm.
@@ -120,4 +126,12 @@ void _FlightState::changeState( FlightStates flightState, IFlightState* flightSt
 
 	if( currentStateController != 0 )
 		currentStateController->start();
+
+	// Reset the timer settings.
+	uint32_t ms = millis();
+	throttleIdleStart = ms + 10;
+	/*
+	yawLeftStart = ms + 10;
+	yawRightStart = ms + 10;
+	*/
 }

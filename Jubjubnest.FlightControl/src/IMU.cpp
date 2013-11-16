@@ -25,7 +25,7 @@ namespace IMUInterrupt {
 	}
 }
 
-_IMU::_IMU(): mpu( new MPU6050() ), yawRates_i( 0 ), pitchRates_i( 0 ), rollRates_i( 0 )
+_IMU::_IMU(): yawRates_i( 0 ), pitchRates_i( 0 ), rollRates_i( 0 ), mpu( new MPU6050() )
 {
 	for( uint8_t i = 0; i < IMU_GYRO_SAMPLES; i++ )
 	{

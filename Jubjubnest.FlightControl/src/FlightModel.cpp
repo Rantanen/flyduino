@@ -46,7 +46,7 @@ void _FlightModel::readRadio()
 	controlPitch = -Radio.channels[1]->value;
 	controlRoll = -Radio.channels[0]->value;
 
-	if( Radio.channels[2]->value == 0.0 )
+	if( Radio.channels[2]->value < 0.01 )
 		power = 0;
 	else
 		power = Radio.channels[2]->value * ( MAX_CONTROL_POWER - MIN_CONTROL_POWER ) + MIN_CONTROL_POWER;
@@ -65,7 +65,6 @@ void _FlightModel::readIMU()
 
 void setEnginePower( Engine* engine, float power )
 {
-	Serial.print( power, 0 );
 	engine->setPower( constrain( power, 0, 1000 ) );
 }
 
@@ -111,9 +110,9 @@ void _FlightModel::update()
 #else
 
 	// In non-stable mode rate error is stick position directly.
-	yawRateError = controlYaw;
-	pitchRateError = controlPitch;
-	rollRateError = controlRoll;
+	yawRateError = ACRO_YAW_GAIN * controlYaw;
+	pitchRateError = ACRO_ROLL_GAIN * controlPitch;
+	rollRateError =  ACRO_ROLL_GAIN *controlRoll;
 
 #endif
 
@@ -128,15 +127,6 @@ void _FlightModel::update()
 	pitchRatePID.update( pitchRateError, currentTime );
 	rollRatePID.update( rollRateError, currentTime );
 
-	/*
-	Serial.print( yawRatePID.getValue() );
-	Serial.print( "\t" );
-	Serial.print( pitchRatePID.getValue() );
-	Serial.print( "\t" );
-	Serial.print( rollRatePID.getValue() );
-	Serial.print( "\t" );
-	*/
-
 	// If power is 0, stop the engines completely.
 	// Otherwise tweak them according to the PIDs.
 	if( power == 0.0 )
@@ -145,15 +135,10 @@ void _FlightModel::update()
 	}
 	else
 	{
-		Serial.print( "E1\t" );
 		setEnginePower( engines[0], power - pitchRatePID.getValue() - yawRatePID.getValue() + rollRatePID.getValue() );
-		Serial.print( "\tE2\t" );
 		setEnginePower( engines[1], power - pitchRatePID.getValue() + yawRatePID.getValue() - rollRatePID.getValue() );
-		Serial.print( "\tE3\t" );
 		setEnginePower( engines[2], power + pitchRatePID.getValue() - yawRatePID.getValue() - rollRatePID.getValue() );
-		Serial.print( "\tE4\t" );
 		setEnginePower( engines[3], power + pitchRatePID.getValue() + yawRatePID.getValue() + rollRatePID.getValue() );
-		Serial.println();
 	}
 }
 
@@ -169,5 +154,6 @@ void _FlightModel::stop()
 {
 	for( int i = 0; i < engineCount; i++ )
 		engines[i]->setPower( 0 );
+	Serial.println();
 }
 

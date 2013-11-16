@@ -3,7 +3,7 @@
 #define _COMMON_H_
 
 // Define LIVE to allow engines to respond to throttle input.
-// #define LIVE
+#define LIVE
 
 /************************
  * Configuration tweaks
@@ -43,7 +43,10 @@
 #define PID_TILT_RATE_KI 0.000
 #define PID_TILT_RATE_KD 0 //300
 
-#define STABLE_MODE
+// #define STABLE_MODE
+
+#define ACRO_YAW_GAIN 1;
+#define ACRO_ROLL_GAIN 5;
 
 //! Yaw control gain
 #define YAW_CONTROL_GAIN 5
@@ -66,8 +69,8 @@
  */
 
 #define STATE_CHANGE_TIME_OFF_TO_ARMED 4000
-#define STATE_CHANGE_TIME_ARMED_TO_OFF 4000
-#define STATE_CHANGE_TIME_OFF_ON_IDLE_THROTTLE 10000
+#define STATE_CHANGE_TIME_ARMED_TO_OFF 2000
+#define STATE_CHANGE_TIME_OFF_ON_IDLE_THROTTLE 30000
 
 /************************
  * Radio configuration

@@ -34,7 +34,7 @@ class Engine
 		 *
 		 * @return Engine power
 		 */
-		uint8_t getPower() { return _power; }
+		uint16_t getPower() { return _power; }
 
 		/**
 		 * Get the engine pin
@@ -50,7 +50,7 @@ class Engine
 		uint8_t _pin;
 
 		//! Current engine power
-		uint8_t _power;
+		uint16_t _power;
 
 
 		//! The servo to which the engine is attached
