@@ -6,14 +6,17 @@ class PID
 {
 	public:
 
-		PID( float kp, float ki, float kd )
-			: Kp( kp ), Ki( ki ), Kd( kd ), Pe( 0 ), Ie( 0 ), De( 0 )
+		PID( float kp, float ki, float kd, float limit )
+			: Kp( kp ), Ki( ki ), Kd( kd ),
+				limit( limit ),
+				Pe( 0 ), Ie( 0 ), De( 0 )
 		{
 		}
 
 		float Kp;
 		float Ki;
 		float Kd;
+		float limit;
 		float Pe;
 		float Ie;
 		float De;
@@ -51,7 +54,7 @@ class PID
 
 		float getValue()
 		{
-			return Pe + Ie + De;
+			return constrain( Pe + Ie + De, 0, limit );
 		}
 };
 
