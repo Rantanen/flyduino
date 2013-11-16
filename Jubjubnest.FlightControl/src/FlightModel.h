@@ -4,16 +4,17 @@
 
 #include <arduino.h>
 #include <helper_3dmath.h>
+#include "common.h"
 #include "Engine.h"
 #include "PID.h"
-#include "common.h"
+#include "IFlightState.h"
 
 /**
  * Flight model abstraction.
  *
  * Tracks all the sensory inputs for the vehicle.
  */
-class _FlightModel
+class _FlightModel : public IFlightState
 {
 	public:
 		_FlightModel();

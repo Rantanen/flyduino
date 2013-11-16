@@ -150,7 +150,7 @@ void loop()
 	IMU.readData();
 	SerialInput.update();
 
-	FlightModel.update();
+	FlightState.update();
 
 #ifdef DIAGNOSTICS
 	diag.report( millis() );
