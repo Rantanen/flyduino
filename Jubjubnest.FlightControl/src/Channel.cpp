@@ -41,7 +41,7 @@ void Channel::storeCenter()
 
 bool Channel::update()
 {
-	unsigned long duration = PinStatus::getValue( pin );
+	long duration = PinStatus::getValue( pin );
 
 	// If the input data is bad (signal lost) set output to zero.
 	if( duration == 0 ) {

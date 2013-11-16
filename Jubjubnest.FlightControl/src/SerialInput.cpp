@@ -1,46 +1,53 @@
 
 #include "SerialInput.h"
+#include "FlightModel.h"
 #include "debug.h"
 
-SerialInput::SerialInput()
-	: read( 0 )
+_SerialInput SerialInput;
+
+_SerialInput::_SerialInput()
 {
 }
 
-bool SerialInput::setup()
-{
-	return true;
-}
-
-void SerialInput::update()
+void _SerialInput::update()
 {
 	while( Serial.available() > 0 )
 	{
-		// If we've been ignoring, wait until 0 to reset status.
-		if( read == -1 ) {
-			if( Serial.read() == 0 ) { read = 0; }
-			return;
+		char c = Serial.read();
+		switch( c )
+		{
+			case '1':
+				FlightModel.pitchRatePID.Kp += 1;
+				FlightModel.rollRatePID.Kp += 1;
+				break;
+			case '2':
+				FlightModel.pitchRatePID.Ki += 0.001;
+				FlightModel.rollRatePID.Ki += 0.001;
+				break;
+			case '3':
+				FlightModel.pitchRatePID.Kd += 1;
+				FlightModel.rollRatePID.Kd += 1;
+				break;
+			case 'q':
+				FlightModel.pitchRatePID.Kp -= 1;
+				FlightModel.rollRatePID.Kp -= 1;
+				break;
+			case 'w':
+				FlightModel.pitchRatePID.Ki -= 0.001;
+				FlightModel.rollRatePID.Ki -= 0.001;
+				break;
+			case 'e':
+				FlightModel.pitchRatePID.Kd -= 1;
+				FlightModel.rollRatePID.Kd -= 1;
+				break;
 		}
 
-		buffer[ read ] = Serial.read();
-		if( buffer[ read ] == 0 )
-		{
-			processMsg();
-			read = 0;
-		}
-		else
-		{
-			read++;
-
-			// If we're overflowing, start ignoring.
-			if( read == 16 ) { read = -1; }
-		}
+		Serial.print( "PID:\t" );
+		Serial.print( FlightModel.pitchRatePID.Kp );
+		Serial.print( "\t" );
+		Serial.print( FlightModel.pitchRatePID.Ki, 4 );
+		Serial.print( "\t" );
+		Serial.println( FlightModel.pitchRatePID.Kd );
 	}
-}
-
-void SerialInput::processMsg()
-{
-	INFO( "Servo position: %i", buffer[0] );
-	servo.write( buffer[0] );
 }
 

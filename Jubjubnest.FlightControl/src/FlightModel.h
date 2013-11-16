@@ -26,39 +26,19 @@ class _FlightModel
 		void addEngine( Engine* engine );
 
 		/**
-		 * Updates the orientation with new information.
-		 *
-		 * @param orientation New orientation.
-		 */
-		void updateOrientation( const Quaternion *orientation );
-
-		/**
-		 * Updates the heading with new information.
-		 *
-		 * 0,0,0 means the craft should be upright.
-		 *
-		 * @param yaw Yaw Euler angle
-		 * @param pitch Pitch Euler angle
-		 * @param roll Roll Euler angle
-		 * @param power Average engine power
-		 * @param engineOn True if engines should be on
-		 */
-		void updateHeading( float yaw, float pitch, float roll, float power, bool engineOn );
-
-		void setArmed( bool armed ) {
-			Serial.print( "Armed: " );
-			Serial.println( armed );
-			digitalWrite( LED_PIN, !armed );
-			this->armed = armed;
-		}
-
-		/**
 		 * Adjusts the flight values
 		 */
 		void update();
 
+		void start();
+		void stop();
+
 		//! Orientation
 		Quaternion orientation;
+
+		float yawRate;
+		float pitchRate;
+		float rollRate;
 
 		//! Inteded power
 		float power;
@@ -83,13 +63,29 @@ class _FlightModel
 		unsigned long lastUpdate;
 		unsigned long lastHeadingUpdate;
 
-		float yaw;
-		float pitch;
-		float roll;
+#ifdef STABLE_MODE
 
-		PID yawOffset;
-		PID pitchOffset;
-		PID rollOffset;
+		float yawOffsetError;
+		float pitchOffsetError;
+		float rollOffsetError;
+
+		PID yawOffsetPID;
+		PID pitchOffsetPID;
+		PID rollOffsetPID;
+
+#endif
+
+		float yawRateError;
+		float pitchRateError;
+		float rollRateError;
+
+		PID yawRatePID;
+		PID pitchRatePID;
+		PID rollRatePID;
+
+	private:
+		void readRadio();
+		void readIMU();
 };
 
 extern _FlightModel FlightModel;

@@ -3,6 +3,7 @@
 #define _IMU_H_
 
 #include "arduino.h"
+#include "common.h"
 #include <helper_3dmath.h>
 #include <I2Cdev.h>
 #include <Wire.h>
@@ -41,6 +42,19 @@ class _IMU
 
 		//! Current orientation based on the IMU
 		Quaternion orientation;
+
+		//! Current gyroscope rates.
+		float yawRate;
+		float pitchRate;
+		float rollRate;
+
+		float yawRates[ IMU_GYRO_SAMPLES ];
+		float pitchRates[ IMU_GYRO_SAMPLES ];
+		float rollRates[ IMU_GYRO_SAMPLES ];
+
+		uint8_t yawRates_i;
+		uint8_t pitchRates_i;
+		uint8_t rollRates_i;
 
 		//! Interrupt flag. Set to true on interrupt.
 		bool interruptFlag;

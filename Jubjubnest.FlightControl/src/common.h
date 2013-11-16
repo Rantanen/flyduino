@@ -17,24 +17,30 @@
 #define ESC_PWM_LIMIT 2000
 #define MAX_ESC_PWM_WIDTH 4000
 
-// #define ENABLE_CALIBRATION
+#define ENABLE_CALIBRATION
 
 // PID tuning parameters
 // X_X_KP - Proportional Gain
 // X_X_KI - Integral gain
 // X_X_KD - Derivative gain
 
-#define PID_YAW_KP 50
-#define PID_YAW_KI 0
-#define PID_YAW_KD 0
+#define PID_YAW_OFFSET_KP 0
+#define PID_YAW_OFFSET_KI 0
+#define PID_YAW_OFFSET_KD 0
 
-#define PID_PITCH_KP 120
-#define PID_PITCH_KI 0.002
-#define PID_PITCH_KD 0 //300
+#define PID_TILT_OFFSET_KP 1
+#define PID_TILT_OFFSET_KI 0.000
+#define PID_TILT_OFFSET_KD 0 //300
 
-#define PID_ROLL_KP 120
-#define PID_ROLL_KI 0.002
-#define PID_ROLL_KD 0 //300
+#define PID_YAW_RATE_KP 0
+#define PID_YAW_RATE_KI 0
+#define PID_YAW_RATE_KD 0
+
+#define PID_TILT_RATE_KP 10
+#define PID_TILT_RATE_KI 0.000
+#define PID_TILT_RATE_KD 0 //300
+
+#define STABLE_MODE
 
 //! Yaw control gain
 #define YAW_CONTROL_GAIN 5
@@ -47,6 +53,7 @@
 
 //! Amount of samples averaged for input channels
 #define CHANNEL_AVERAGE_SAMPLES 4
+#define IMU_GYRO_SAMPLES 4
 
 //! Deadzone for the input channels
 #define CHANNEL_DEADZONE 0.01
@@ -90,7 +97,7 @@
  * 4 - Include Info-level tracing
  * 5 - Include Debug-level tracing
  */
-#define ERRORLEVEL 4
+#define ERRORLEVEL 0
 
 //! Sensor diagnostic output
 // #define DIAGNOSTICS

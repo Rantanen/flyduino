@@ -10,12 +10,11 @@
 #include "PinStatus.h"
 #include "SerialInput.h"
 #include "Engine.h"
+#include "FlightState.h"
 
 #ifdef DIAGNOSTICS
 #include "Diagnostics.h"
 #endif
-
-//#define CALIBRATION
 
 int main(void)
 {
@@ -43,6 +42,10 @@ Engine engines[4] = {
 };
 
 #define STOP_ERROR( msg ) { ERROR_F( msg ); while( true ); }
+
+void debug()
+{
+}
 
 void setup() {
 	// Init serial and wait for it to be up
@@ -143,59 +146,9 @@ void setup() {
 
 void loop()
 {
-	while( Serial.available() > 0 )
-	{
-		char c = Serial.read();
-		switch( c )
-		{
-			case '1':
-				FlightModel.pitchOffset.Kp += 1;
-				FlightModel.rollOffset.Kp += 1;
-				break;
-			case '2':
-				FlightModel.pitchOffset.Ki += 0.001;
-				FlightModel.rollOffset.Ki += 0.001;
-				break;
-			case '3':
-				FlightModel.pitchOffset.Kd += 1;
-				FlightModel.rollOffset.Kd += 1;
-				break;
-			case 'q':
-				FlightModel.pitchOffset.Kp -= 1;
-				FlightModel.rollOffset.Kp -= 1;
-				break;
-			case 'w':
-				FlightModel.pitchOffset.Ki -= 0.001;
-				FlightModel.rollOffset.Ki -= 0.001;
-				break;
-			case 'e':
-				FlightModel.pitchOffset.Kd -= 1;
-				FlightModel.rollOffset.Kd -= 1;
-				break;
-		}
-
-		Serial.print( "PID:\t" );
-		Serial.print( FlightModel.pitchOffset.Kp );
-		Serial.print( "\t" );
-		Serial.print( FlightModel.pitchOffset.Ki, 4 );
-		Serial.print( "\t" );
-		Serial.println( FlightModel.pitchOffset.Kd );
-	}
-
-	if( Radio.update() )
-	{
-		FlightModel.updateHeading(
-				Radio.channels[3]->value,
-				-Radio.channels[1]->value,
-				-Radio.channels[0]->value,
-				Radio.channels[2]->value,
-				Radio.channels[4]->value < 0 );
-	}
-
-	if( IMU.readData() )
-	{
-		FlightModel.updateOrientation( &IMU.orientation );
-	}
+	Radio.update();
+	IMU.readData();
+	SerialInput.update();
 
 	FlightModel.update();
 

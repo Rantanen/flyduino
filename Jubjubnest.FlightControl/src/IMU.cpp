@@ -1,6 +1,5 @@
 
 #include "IMU.h"
-#include "common.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-value"
@@ -26,8 +25,14 @@ namespace IMUInterrupt {
 	}
 }
 
-_IMU::_IMU(): mpu( new MPU6050() )
+_IMU::_IMU(): mpu( new MPU6050() ), yawRates_i( 0 ), pitchRates_i( 0 ), rollRates_i( 0 )
 {
+	for( uint8_t i = 0; i < IMU_GYRO_SAMPLES; i++ )
+	{
+		yawRates[i] = 0.0;
+		pitchRates[i] = 0.0;
+		rollRates[i] = 0.0;
+	}
 }
 
 bool _IMU::setup()
@@ -144,7 +149,24 @@ bool _IMU::readData()
 
 		fifoCount -= fifoPacketSize;
 
+		// Read orientation
 		mpu->dmpGetQuaternion( &orientation, fifoBuffer );
+
+		// Read gyro data
+		int32_t gyroData[3];
+		mpu->dmpGetGyro( gyroData, fifoBuffer );
+
+		rollRate -= rollRates[ rollRates_i ];
+		rollRate += ( rollRates[ rollRates_i++ ] = (gyroData[0] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
+		rollRates_i %= IMU_GYRO_SAMPLES;
+
+		pitchRate -= pitchRates[ pitchRates_i ];
+		pitchRate += ( pitchRates[ pitchRates_i++ ] = (gyroData[1] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
+		pitchRates_i %= IMU_GYRO_SAMPLES;
+
+		yawRate -= yawRates[ yawRates_i ];
+		yawRate += ( yawRates[ yawRates_i++ ] = (gyroData[2] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
+		yawRates_i %= IMU_GYRO_SAMPLES;
 	}
 
 	// Mark the last read for diagnostic purposes.

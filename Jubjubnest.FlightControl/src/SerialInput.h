@@ -5,22 +5,14 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-class SerialInput
+class _SerialInput
 {
 	public:
-		SerialInput();
-
-		bool setup();
+		_SerialInput();
 		void update();
-
-	private:
-		void processMsg();
-
-		uint8_t buffer[16];
-		uint8_t read;
-
-		Servo servo;
 };
+
+extern _SerialInput SerialInput;
 
 #endif
 
