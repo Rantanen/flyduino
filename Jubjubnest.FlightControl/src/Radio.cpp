@@ -17,30 +17,36 @@ _Radio::~_Radio()
 	}
 }
 
-void _Radio::addChannel( int pin, float offset )
+void _Radio::addChannel( int pin )
 {
-	channels[ channelCount ] = new Channel( pin, offset );
+	channels[ channelCount ] = new Channel( pin );
 	pinMode( pin, INPUT );
 	channelCount++;
 }
 
 void _Radio::calibrate()
 {
-	while( Serial.available() && Serial.read() );
 	for( uint8_t i = 0; i < channelCount; i++ )
 	{
 		channels[i]->calibrate();
 	}
 }
 
-void _Radio::calibrationDone()
+void _Radio::recordCenterPositions()
+{
+	for( uint8_t i = 0; i < channelCount; i++ )
+	{
+		channels[i]->storeCenter();
+	}
+}
+
+void _Radio::saveCalibration()
 {
 	INFO( "Radio ranges by channel:" );
 	for( uint8_t i = 0; i < channelCount; i++ )
 	{
-		channels[i]->calibrationDone();
-		channels[i]->saveRange( i );
-		INFO( "%i\t%lu\t%lu\t(%i samples, %i timeouts)", i+1, channels[i]->minValue, channels[i]->maxValue, channels[i]->samples, channels[i]->timeouts );
+		channels[i]->saveCalibration();
+		INFO( "%i\t%u\t%u\t%u", i+1, channels[i]->calibrationData.minValue, channels[i]->calibrationData.center, channels[i]->calibrationData.maxValue );
 	}
 }
 
@@ -49,8 +55,8 @@ void _Radio::loadCalibration()
 	INFO( "Radio ranges by channel:" );
 	for( uint8_t i = 0; i < channelCount; i++ )
 	{
-		channels[i]->loadRange( i );
-		INFO( "%i\t%u\t%u", i+1, channels[i]->minValue, channels[i]->maxValue );
+		channels[i]->loadCalibration();
+		INFO( "%i\t%u\t%u\t%u", i+1, channels[i]->calibrationData.minValue, channels[i]->calibrationData.center, channels[i]->calibrationData.maxValue );
 	}
 }
 

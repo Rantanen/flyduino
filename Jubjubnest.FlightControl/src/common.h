@@ -17,6 +17,8 @@
 #define ESC_PWM_LIMIT 2000
 #define MAX_ESC_PWM_WIDTH 4000
 
+// #define ENABLE_CALIBRATION
+
 // PID tuning parameters
 // X_X_KP - Proportional Gain
 // X_X_KI - Integral gain
@@ -88,7 +90,7 @@
  * 4 - Include Info-level tracing
  * 5 - Include Debug-level tracing
  */
-#define ERRORLEVEL 3
+#define ERRORLEVEL 4
 
 //! Sensor diagnostic output
 // #define DIAGNOSTICS

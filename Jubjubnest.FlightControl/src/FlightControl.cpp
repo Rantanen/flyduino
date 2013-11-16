@@ -55,11 +55,11 @@ void setup() {
 
 	digitalWrite( LED_PIN, LOW );
 
-	Radio.addChannel( 0, -0.5 );
-	Radio.addChannel( 1, -0.5 );
-	Radio.addChannel( 2, 0 );
-	Radio.addChannel( 3, -0.5 );
-	Radio.addChannel( 4, -0.5 );
+	Radio.addChannel( 0 );
+	Radio.addChannel( 1 );
+	Radio.addChannel( 2 );
+	Radio.addChannel( 3 );
+	Radio.addChannel( 4 );
 
 	// Setup the engines first to reset the channels for ECM
 	for( int i = 0; i < 4; i++ )
@@ -76,16 +76,29 @@ void setup() {
 		STOP_ERROR( "Failed to initialize IMU");
 
 	// Wait for the TX to give valid values
-	while( !Radio.update() ||
-			Radio.channels[4]->raw < 750 ||
-			Radio.channels[4]->raw > 2250 );
+	while( true )
+	{
+		if( !Radio.update() ) continue;
+
+		for( uint8_t i = 0; i < Radio.channelCount; i++ )
+		{
+			if( Radio.channels[i]->raw < 750 ||	Radio.channels[i]->raw > 2250 )
+				continue;
+		}
+
+		break;
+	}
 
 	// If elevator is pulled down when the thing is reset, enter calibration mode.
 	bool calibrationSaved = false;
-	if( Radio.channels[1]->raw < 1300 )
+
+#ifdef ENABLE_CALIBRATION
+
+	if( Radio.channels[1]->raw < 1400 )
 	{
+		INFO( "Calibration started" );
+
 		unsigned long canExitCalibration = millis() + 4000;
-		
 		while( millis() < canExitCalibration )
 		{
 			blink( 100 );
@@ -97,6 +110,13 @@ void setup() {
 				canExitCalibration = millis() + 4000;
 		}
 
+		// Sticks are centered. Record the zero values.
+		digitalWrite( LED_PIN, HIGH );
+		delay( 500 );
+		Radio.update();
+		Radio.recordCenterPositions();
+		digitalWrite( LED_PIN, LOW );
+
 		// Now allow for 1 second for the user to make a choice whether to save values or not.
 		delay( 1000 );
 
@@ -105,11 +125,12 @@ void setup() {
 		{
 			// Elevator was up
 			//   -> this calibration was intended and should be saved.
-			Radio.calibrationDone();
+			Radio.saveCalibration();
 			INFO( "Calibration saved" );
 			calibrationSaved = true;
 		}
 	}
+#endif
 
 	if( !calibrationSaved )
 	{

@@ -9,7 +9,7 @@ _FlightModel FlightModel;
 _FlightModel::_FlightModel()
 	: orientation(1,0,0,0),
 		power(0), controlYaw(0), controlPitch(0), controlRoll(0),
-		engineOn(false), armed(true),
+		engineOn(false), armed(false),
 		engineCount(0), lastUpdate(0),
 		yaw( 0 ), pitch( 0 ), roll( 0 ),
 		yawOffset( PID_YAW_KP, PID_YAW_KI, PID_YAW_KD ),
@@ -87,7 +87,7 @@ void _FlightModel::updateHeading( float yaw, float pitch, float roll, float powe
 void setEnginePower( Engine* engine, float power )
 {
 	Serial.print( power, 2 );
-	//engine->setPower( constrain( power, 0, 1000 ) );
+	engine->setPower( constrain( power, 0, 1000 ) );
 }
 
 void _FlightModel::update()

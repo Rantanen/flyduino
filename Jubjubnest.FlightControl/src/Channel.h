@@ -13,21 +13,11 @@ class Channel {
 	public:
 
 		/**
-		 * Basic constructor.
+		 * Constructor
 		 *
 		 * @param pin Pin number of the input pin for this channel
 		 */
 		Channel( uint8_t pin );
-
-		/**
-		 * Constructor with an offset.
-		 *
-		 * Use the offset to define value ranges other than 0..1
-		 *
-		 * @param pin Pin number of the input pin for this channel
-		 * @param offset Offset added to the value when updating it
-		 */
-		Channel( uint8_t pin, float offset );
 
 		/**
 		 * Perform one sample worth of calibration.
@@ -40,15 +30,13 @@ class Channel {
 		void calibrate();
 
 		/**
-		 * Signal calibration as done.
+		 * Stores the center spot and calculates the calibration scale
 		 */
-		void calibrationDone();
+		void storeCenter();
 
 		/**
-		 * Resets the old calibration data.
-		 *
-		 * Resets the max/min value information. This can be used
-		 * before re-calibrating the channel
+		 * Resets the current calibration data in preparation for new
+		 * calibration
 		 */
 		void resetCalibration();
 
@@ -60,20 +48,17 @@ class Channel {
 		 *
 		 * @param slot Channel slot to save the range to
 		 */
-		void saveRange( int slot );
+		void saveCalibration();
 
 		/**
 		 * Loads the calibration range from the EEPROM
 		 *
 		 * @param slot Channel slot to load the range from
 		 */
-		void loadRange( int slot );
+		void loadCalibration();
 
 		//! Input pin number
 		uint8_t pin;
-
-		//! Offset for the value.
-		float offset;
 
 		//! Raw pulse duration in microseconds.
 		unsigned int raw;
@@ -81,21 +66,13 @@ class Channel {
 		//! Current channel value.
 		float value;
 
-	  
-		//! Calibrated minimum value for the channel input
-		unsigned int minValue;
-
-		//! Calibrated maximum value for the channel input
-		unsigned int maxValue;
-
-		//! Center value
-		unsigned int center;
-
-		//! Amount of samples received for calibration.
-		unsigned int samples;
-
-		//! Amount of timed out samples during the calibration.
-		unsigned int timeouts;
+		struct CalibrationData
+		{
+			uint16_t minValue;
+			uint16_t maxValue;
+			uint16_t center;
+			float scale;
+		} calibrationData;
 };
 
 #endif // _CHANNEL_H_

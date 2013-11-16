@@ -17,10 +17,10 @@ bool Engine::setup()
 
 void Engine::setPower( uint16_t power )
 {
-	power = map( constrain( power, 0, 750 ),
+	_power = map( constrain( power, 0, 750 ),
 			0, 1000,
 			MIN_ESC_PWM_WIDTH, ESC_PWM_LIMIT );
-	_servo.write( power );
+	// _servo.write( _power );
 }
 
 

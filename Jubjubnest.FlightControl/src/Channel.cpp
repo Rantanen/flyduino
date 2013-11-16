@@ -6,37 +6,37 @@
 #include <EEPROM.h>
 #include "common.h"
 
-Channel::Channel( uint8_t pin ):
-	pin( pin ), offset( 0 ),
-	minValue( 0 ), maxValue( 0 ), samples( 0 ), timeouts( 0 )
-{
-	resetCalibration();
-}
-
-Channel::Channel( uint8_t pin, float offset ):
-	pin( pin ), offset( offset ), minValue( 0 ), maxValue( 0 ), samples( 0 ), timeouts( 0 )
+Channel::Channel( uint8_t pin )
+	: pin( pin )
 {
 	resetCalibration();
 }
 
 void Channel::resetCalibration()
 {
-	minValue = UINT_MAX;
-	maxValue = 0;
+	calibrationData.minValue = 0;
+	calibrationData.maxValue = 0;
 }
 
 void Channel::calibrate()
 {
-	unsigned int value = PinStatus::getValue( pin );
-	if( value > maxValue ) maxValue = value;
-	if( value < minValue ) minValue = value;
-	samples++;
+	uint16_t value = PinStatus::getValue( pin );
+	if( calibrationData.maxValue == 0 ||
+			value > calibrationData.maxValue ) calibrationData.maxValue = value;
+	if( calibrationData.minValue == 0 ||
+			value < calibrationData.minValue ) calibrationData.minValue = value;
 }
 
-void Channel::calibrationDone()
+void Channel::storeCenter()
 {
-	minValue += 20;
-	maxValue -= 20;
+	uint16_t center = PinStatus::getValue( pin );
+	calibrationData.center = center;
+	
+	uint16_t maxOffset = max(
+			calibrationData.center - calibrationData.minValue,
+			calibrationData.maxValue - calibrationData.center );
+
+	calibrationData.scale = 1.0f / maxOffset;
 }
 
 bool Channel::update()
@@ -46,15 +46,14 @@ bool Channel::update()
 	// If the input data is bad (signal lost) set output to zero.
 	if( duration == 0 ) {
 		WARN( "Bad values." );
-		raw = 0;
+		raw = calibrationData.center;
 		value = 0;
 		return false;
 	}
 
 	raw = duration;
-
-	duration = constrain( raw, minValue, maxValue );
-	value = (float)(duration - minValue) / (maxValue - minValue) + offset;
+	duration = constrain( raw, calibrationData.minValue, calibrationData.maxValue );
+	value = (duration - calibrationData.center) * calibrationData.scale;
 
 	if( value > 0 ) {
 		if( value < CHANNEL_DEADZONE )
@@ -73,29 +72,24 @@ bool Channel::update()
 	return true;
 }
 
-void saveInt( unsigned int address, int value )
+void Channel::saveCalibration()
 {
-	uint8_t left = value >> 8;
-	uint8_t right = value;
-	EEPROM.write( address, left );
-	EEPROM.write( address + 1, right );
+	uint16_t start = CHANNEL_EEPROM_START + sizeof( calibrationData ) * pin;
+	uint8_t* dataStart = reinterpret_cast<uint8_t*>( &calibrationData );
+	for( uint8_t i = 0; i < sizeof( calibrationData ); i++ )
+	{
+		uint8_t data = *(dataStart + i);
+		EEPROM.write( start + i, data );
+	}
 }
 
-int readInt( unsigned int address )
+void Channel::loadCalibration()
 {
-	uint8_t left = EEPROM.read( address );
-	uint8_t right = EEPROM.read( address + 1 );
-	return (left << 8) + right;
-}
-
-void Channel::saveRange( int slot )
-{
-	saveInt( CHANNEL_EEPROM_START + 4*slot, minValue );
-	saveInt( CHANNEL_EEPROM_START + 4*slot + 2, maxValue );
-}
-
-void Channel::loadRange( int slot )
-{
-	minValue = readInt( CHANNEL_EEPROM_START + 4*slot );
-	maxValue = readInt( CHANNEL_EEPROM_START + 4*slot + 2 );
+	uint16_t start = CHANNEL_EEPROM_START + sizeof( calibrationData ) * pin;
+	uint8_t* dataStart = reinterpret_cast<uint8_t*>( &calibrationData );
+	for( uint8_t i = 0; i < sizeof( calibrationData ); i++ )
+	{
+		uint8_t data = EEPROM.read( start + i );
+		*(dataStart + i) = data;
+	}
 }

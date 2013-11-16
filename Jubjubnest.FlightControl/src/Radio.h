@@ -30,9 +30,8 @@ class _Radio
 		 * Adds channel specification to the radio control
 		 *
 		 * @param pin Channel input pin
-		 * @param offset Possible offset for the channel
 		 */
-		void addChannel( int pin, float offset );
+		void addChannel( int pin );
 
 		/**
 		 * Runs a single calibration step to find the limits of axis.
@@ -40,16 +39,19 @@ class _Radio
 		void calibrate();
 
 		/**
-		 * Signals the calibration is done.
-		 *
-		 * Saves the calibration settings if they were valid.
+		 * Stores the center positions
 		 */
-		void calibrationDone();
+		void recordCenterPositions();
 
 		/**
 		 * Loads previously calibrated radio values.
 		 */
 		void loadCalibration();
+
+		/**
+		 * Saves current calibrated radio values.
+		 */
+		void saveCalibration();
 
 		/**
 		 * Samples the radio inputs and updates the channel values
@@ -64,7 +66,6 @@ class _Radio
 		 * Channels controlled by this radio
 		 */
 		Channel* channels[ MAX_CHANNELS ];
-	private:
 
 		//! Current channel count
 		uint8_t channelCount;
