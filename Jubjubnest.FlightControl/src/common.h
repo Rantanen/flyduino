@@ -2,6 +2,9 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+// Define LIVE to allow engines to respond to throttle input.
+// #define LIVE
+
 /************************
  * Configuration tweaks
  */
@@ -57,6 +60,14 @@
 
 //! Deadzone for the input channels
 #define CHANNEL_DEADZONE 0.01
+
+/************************
+ * State change times
+ */
+
+#define STATE_CHANGE_TIME_OFF_TO_ARMED 4000
+#define STATE_CHANGE_TIME_ARMED_TO_OFF 4000
+#define STATE_CHANGE_TIME_OFF_ON_IDLE_THROTTLE 10000
 
 /************************
  * Radio configuration

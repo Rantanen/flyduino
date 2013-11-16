@@ -20,7 +20,9 @@ void Engine::setPower( uint16_t power )
 	_power = map( constrain( power, 0, 750 ),
 			0, 1000,
 			MIN_ESC_PWM_WIDTH, ESC_PWM_LIMIT );
-	// _servo.write( _power );
+#ifdef LIVE
+	_servo.write( _power );
+#endif
 }
 
 

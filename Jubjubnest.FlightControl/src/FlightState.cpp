@@ -14,15 +14,17 @@ _FlightState::_FlightState()
 
 void _FlightState::update()
 {
+	updateChannelTimes();
+
 	switch( currentState )
 	{
 		case eFlightStateOff:
-			if( checkLeftStick( false, true, 4000 ) )
+			if( checkOffToArmed() )
 				changeState( eFlightStateArmed, &FlightModel );
 			break;
 
 		case eFlightStateArmed:
-			if( checkLeftStick( false, false, 4000 ) || checkThrottle( false, 15000 ) )
+			if( checkArmedToOff() );
 				changeState( eFlightStateOff, 0 );
 			break;
 	}
@@ -31,49 +33,78 @@ void _FlightState::update()
 		currentStateController->update();
 }
 
-bool _FlightState::checkLeftStick( bool throttleUp, bool yawRight, uint16_t time )
+void _FlightState::updateChannelTimes()
 {
-	float throttle = Radio.channels[2]->value;
-	if( ( throttleUp && throttle < 0.95 ) || ( !throttleUp && throttle > 0.01 ) )
-	{
-		leftStickChangeTime = 0;
-		return false;
-	}
+	uint32_t ms = millis();
+	Channel* throttle = Radio.channels[2];
 
-	float yaw = Radio.channels[3]->value;
-	if( ( yawRight && yaw < 0.8 ) || ( !yawRight && yaw > 0.2 ) )
-	{
-		leftStickChangeTime = 0;
-		return false;
-	}
+	// As long as the throttle isn't idling,
+	// push the idle start to the future.
+	if( throttle->raw > throttle->calibrationData.minValue + 50 )
+		throttleIdleStart = ms + 1000;
 
-	blink( 100 );
-	if( leftStickChangeTime == 0 )
-	{
-		leftStickChangeTime = millis() + time;
-		return false;
-	}
+	Channel* yaw = Radio.channels[3];
 
-	return millis() > leftStickChangeTime;
+	// Same for yaw left/right
+	if( yaw->raw > yaw->calibrationData.minValue + 50 )
+		yawLeftStart = ms + 1000;
+	if( yaw->raw < yaw->calibrationData.maxValue - 50 )
+		yawRightStart = ms + 1000;
 }
 
-bool _FlightState::checkThrottle( bool throttleUp, uint16_t time )
+bool _FlightState::checkOffToArmed()
 {
+	uint32_t ms = millis();
 	float throttle = Radio.channels[2]->value;
-	if( ( throttleUp && throttle < 0.95 ) || ( !throttleUp && throttle > 0.01 ) )
+
+	// Make sure throttle is down and yaw is right (up)
+	if( throttleIdleStart > ms || yawRightStart > ms )
 	{
-		throttleChangeTime = 0;
+		digitalWrite( LED_PIN, LOW );
 		return false;
 	}
 
-	blink( 100 );
-	if( throttleChangeTime == 0 )
+	if( ms > throttleIdleStart + STATE_CHANGE_TIME_OFF_TO_ARMED &&
+			ms > yawRightStart + STATE_CHANGE_TIME_OFF_TO_ARMED )
 	{
-		throttleChangeTime = millis() + time;
-		return false;
+		return true;
 	}
 
-	return millis() > throttleChangeTime;
+	blink(100);
+	return false;
+}
+
+bool _FlightState::checkArmedToOff()
+{
+	uint32_t ms = millis();
+	float throttle = Radio.channels[2]->value;
+
+	// Make sure throttle is down
+	if( throttleIdleStart > ms )
+	{
+		digitalWrite( LED_PIN, LOW );
+		return false;
+	}
+	// Check whether engine has been idle long enough.
+	if( ms > throttleIdleStart + STATE_CHANGE_TIME_OFF_ON_IDLE_THROTTLE )
+	{
+		return true;
+	}
+
+	// Blink here anyway for funs. Sure it'll light up the led a bit too much in some
+	// cases, but that's for few microseconds and saves us some code size.
+	blink(500);
+
+	// Engine hasn't idled long enough. Check whether throttle/yaw combo tells
+	// us to disarm.
+	if( ms > throttleIdleStart + STATE_CHANGE_TIME_ARMED_TO_OFF &&
+			ms > yawLeftStart + STATE_CHANGE_TIME_ARMED_TO_OFF )
+	{
+		return true;
+	}
+
+	blink(100);
+	return false;
 }
 
 void _FlightState::changeState( FlightStates flightState, IFlightState* flightStateController )

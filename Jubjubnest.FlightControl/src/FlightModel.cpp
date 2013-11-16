@@ -46,7 +46,10 @@ void _FlightModel::readRadio()
 	controlPitch = -Radio.channels[1]->value;
 	controlRoll = -Radio.channels[0]->value;
 
-	power = Radio.channels[2]->value * ( MAX_CONTROL_POWER - MIN_CONTROL_POWER ) + MIN_CONTROL_POWER;
+	if( Radio.channels[2]->value == 0.0 )
+		power = 0;
+	else
+		power = Radio.channels[2]->value * ( MAX_CONTROL_POWER - MIN_CONTROL_POWER ) + MIN_CONTROL_POWER;
 
 	lastHeadingUpdate = currentTime;
 }
@@ -134,15 +137,24 @@ void _FlightModel::update()
 	Serial.print( "\t" );
 	*/
 
-	Serial.print( "E1\t" );
-	setEnginePower( engines[0], power - pitchRatePID.getValue() - yawRatePID.getValue() + rollRatePID.getValue() );
-	Serial.print( "\tE2\t" );
-	setEnginePower( engines[1], power - pitchRatePID.getValue() + yawRatePID.getValue() - rollRatePID.getValue() );
-	Serial.print( "\tE3\t" );
-	setEnginePower( engines[2], power + pitchRatePID.getValue() - yawRatePID.getValue() - rollRatePID.getValue() );
-	Serial.print( "\tE4\t" );
-	setEnginePower( engines[3], power + pitchRatePID.getValue() + yawRatePID.getValue() + rollRatePID.getValue() );
-	Serial.println();
+	// If power is 0, stop the engines completely.
+	// Otherwise tweak them according to the PIDs.
+	if( power == 0.0 )
+	{
+		stop();
+	}
+	else
+	{
+		Serial.print( "E1\t" );
+		setEnginePower( engines[0], power - pitchRatePID.getValue() - yawRatePID.getValue() + rollRatePID.getValue() );
+		Serial.print( "\tE2\t" );
+		setEnginePower( engines[1], power - pitchRatePID.getValue() + yawRatePID.getValue() - rollRatePID.getValue() );
+		Serial.print( "\tE3\t" );
+		setEnginePower( engines[2], power + pitchRatePID.getValue() - yawRatePID.getValue() - rollRatePID.getValue() );
+		Serial.print( "\tE4\t" );
+		setEnginePower( engines[3], power + pitchRatePID.getValue() + yawRatePID.getValue() + rollRatePID.getValue() );
+		Serial.println();
+	}
 }
 
 void _FlightModel::start()

@@ -3,6 +3,7 @@
 #define _FLIGHTSTATE_H_
 
 #include <arduino.h>
+#include "common.h"
 #include "IFlightState.h"
 
 enum FlightStates
@@ -20,12 +21,16 @@ class _FlightState
 		void update();
 
 	private:
-		bool checkLeftStick( bool throttleUp, bool yawRight, uint16_t time );
-		bool checkThrottle( bool throttleUp, uint16_t time );
+		void updateChannelTimes();
+
+		bool checkOffToArmed();
+		bool checkArmedToOff();
+
 		void changeState( FlightStates flightState, IFlightState* flightStateController );
 
-		uint32_t leftStickChangeTime;
-		uint32_t throttleChangeTime;
+		uint32_t throttleIdleStart;
+		uint32_t yawRightStart;
+		uint32_t yawLeftStart;
 };
 
 extern _FlightState FlightState;
