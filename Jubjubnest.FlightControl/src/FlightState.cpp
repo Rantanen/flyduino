@@ -40,15 +40,15 @@ void _FlightState::updateChannelTimes()
 
 	// As long as the throttle isn't idling,
 	// push the idle start to the future.
-	if( throttle->raw > throttle->calibrationData.minValue + 20)
+	if( throttle->raw > throttle->calibrationData.minValue + 25)
 		throttleIdleStart = ms + 10;
 
 	Channel* yaw = Radio.channels[3];
 
 	// Same for yaw left/right
-	if( yaw->value > -0.45 )
+	if( yaw->value > -0.40 )
 		yawLeftStart = ms + 10;
-	if( yaw->value < 0.45 )
+	if( yaw->value < 0.40 )
 		yawRightStart = ms + 10;
 
 }
