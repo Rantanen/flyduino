@@ -112,7 +112,7 @@ void _FlightModel::update()
 	// In non-stable mode rate error is stick position directly.
 	yawRateError = ACRO_YAW_GAIN * controlYaw;
 	pitchRateError = ACRO_ROLL_GAIN * controlPitch;
-	rollRateError =  ACRO_ROLL_GAIN *controlRoll;
+	rollRateError =  ACRO_ROLL_GAIN * controlRoll;
 
 #endif
 
@@ -126,6 +126,12 @@ void _FlightModel::update()
 	yawRatePID.update( yawRateError, currentTime );
 	pitchRatePID.update( pitchRateError, currentTime );
 	rollRatePID.update( rollRateError, currentTime );
+
+	/*
+	Serial.print( rollRatePID.Pe );
+	Serial.print( "\t" );
+	Serial.println( rollRatePID.De );
+	*/
 
 	// If power is 0, stop the engines completely.
 	// Otherwise tweak them according to the PIDs.
@@ -154,6 +160,5 @@ void _FlightModel::stop()
 {
 	for( int i = 0; i < engineCount; i++ )
 		engines[i]->setPower( 0 );
-	Serial.println();
 }
 

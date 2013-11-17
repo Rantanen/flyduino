@@ -54,7 +54,7 @@ class PID
 
 		float getValue()
 		{
-			return constrain( Pe + Ie + De, 0, limit );
+			return constrain( Pe + Ie + De, -limit, limit );
 		}
 };
 
