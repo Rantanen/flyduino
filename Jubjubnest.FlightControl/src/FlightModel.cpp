@@ -42,7 +42,12 @@ void _FlightModel::readRadio()
 	if( currentTime == lastHeadingUpdate ) return;
 
 	// Update the control values
-	controlYaw += YAW_CONTROL_GAIN * (Radio.channels[3]->value * (currentTime - lastHeadingUpdate) / 1000000.0f);
+#ifdef STABLE_MODE
+	//controlYaw = YAW_CONTROL_GAIN * -Radio.channels[3]->value;
+	controlYaw += YAW_CONTROL_GAIN * (-Radio.channels[3]->value * (currentTime - lastHeadingUpdate) / 1000000.0f);
+#else
+	controlYaw = YAW_CONTROL_GAIN * -Radio.channels[3]->value;
+#endif
 	controlPitch = -Radio.channels[1]->value;
 	controlRoll = -Radio.channels[0]->value;
 
@@ -50,6 +55,10 @@ void _FlightModel::readRadio()
 		power = 0;
 	else
 		power = Radio.channels[2]->value * ( MAX_CONTROL_POWER - MIN_CONTROL_POWER ) + MIN_CONTROL_POWER;
+
+	pitchRatePID.Kd = PID_TILT_RATE_KP + map( Radio.channels[4]->value * 1000, -500, 500, -500, 500 );
+	rollRatePID.Kd = PID_TILT_RATE_KP + map( Radio.channels[4]->value * 1000, -500, 500, -500, 500 );
+	Serial.println( pitchRatePID.Kp );
 
 	lastHeadingUpdate = currentTime;
 }
@@ -151,6 +160,9 @@ void _FlightModel::update()
 void _FlightModel::start()
 {
 	lastHeadingUpdate = micros();
+
+	// Reset the yaw
+	readIMU();
 	controlYaw = atan2(
 			2*(orientation.w*orientation.z + orientation.x*orientation.y),
 		1 - 2*(orientation.y*orientation.y + orientation.z*orientation.z) );
@@ -160,5 +172,12 @@ void _FlightModel::stop()
 {
 	for( int i = 0; i < engineCount; i++ )
 		engines[i]->setPower( 0 );
+
+	// Reset the yaw. This here mainly as we keep calling stop()
+	// when throttle is 0.
+	readIMU();
+	controlYaw = atan2(
+			2*(orientation.w*orientation.z + orientation.x*orientation.y),
+		1 - 2*(orientation.y*orientation.y + orientation.z*orientation.z) );
 }
 

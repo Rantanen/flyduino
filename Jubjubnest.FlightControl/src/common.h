@@ -27,25 +27,25 @@
 // X_X_KI - Integral gain
 // X_X_KD - Derivative gain
 
-#define PID_YAW_OFFSET_KP 0
+#define PID_YAW_OFFSET_KP 3
 #define PID_YAW_OFFSET_KI 0
 #define PID_YAW_OFFSET_KD 0
-#define PID_YAW_OFFSET_LIMIT 5
+#define PID_YAW_OFFSET_LIMIT 10
 
 #define PID_TILT_OFFSET_KP 4
 #define PID_TILT_OFFSET_KI 0.000
 #define PID_TILT_OFFSET_KD 0
-#define PID_TILT_OFFSET_LIMIT 5
+#define PID_TILT_OFFSET_LIMIT 10
 
-#define PID_YAW_RATE_KP 30
+#define PID_YAW_RATE_KP 75
 #define PID_YAW_RATE_KI 0
-#define PID_YAW_RATE_KD 20
-#define PID_YAW_RATE_LIMIT 200
+#define PID_YAW_RATE_KD 0
+#define PID_YAW_RATE_LIMIT 250
 
 #define PID_TILT_RATE_KP 30
 #define PID_TILT_RATE_KI 0.000
 #define PID_TILT_RATE_KD 30
-#define PID_TILT_RATE_LIMIT 500
+#define PID_TILT_RATE_LIMIT 250
 
 #define STABLE_MODE
 
