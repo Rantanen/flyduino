@@ -16,7 +16,7 @@ Diagnostics::Diagnostics( uint16_t updateInterval )
 
 void Diagnostics::report( unsigned long ms )
 {
-	unsigned long treshold = millis() + 2;
+	unsigned long treshold = millis() + 1;
 
 	if( ms > nextUpdate ) {
 		step = 1;
@@ -42,10 +42,9 @@ void Diagnostics::report( unsigned long ms )
 			case 2:
 
 				DIAG( "HEAD" );
-				DIAG( FlightModel.heading.x, 3 );
-				DIAG( FlightModel.heading.y, 3 );
-				DIAG( FlightModel.heading.z, 3 );
-				DIAGLN( FlightModel.heading.w, 3 );
+				DIAG( FlightModel.controlYaw, 3 );
+				DIAG( FlightModel.controlPitch, 3 );
+				DIAGLN( FlightModel.controlRoll, 3 );
 				reports++;
 
 				step++;
@@ -53,12 +52,6 @@ void Diagnostics::report( unsigned long ms )
 
 			case 3:
 				
-				DIAG( "OFFSET" );
-				DIAG( FlightModel.yaw, 3 );
-				DIAG( FlightModel.pitch, 3 );
-				DIAGLN( FlightModel.roll, 3 );
-				reports++;
-
 				step++;
 				engineStep = 0;
 				ALLOW_YIELD
