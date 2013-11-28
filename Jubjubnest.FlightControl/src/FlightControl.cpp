@@ -148,7 +148,7 @@ void loop()
 {
 	Radio.update();
 	IMU.readData();
-	SerialInput.update();
+	// SerialInput.update();
 
 	FlightState.update();
 

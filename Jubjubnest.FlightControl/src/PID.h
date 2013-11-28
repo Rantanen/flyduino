@@ -36,9 +36,9 @@ class PID
 			Pe = Kp * value;
 			De = Kd * value / delta;
 
-			if( Pe + De < 25 )
+			if( Pe + De < 50 )
 			{
-				Ie = constrain( Ie + Ki * value * delta, -10, 10 );
+				Ie = constrain( Ie + Ki * value * delta, -50, 50 );
 			}
 			else
 			{

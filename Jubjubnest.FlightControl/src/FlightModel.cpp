@@ -51,14 +51,36 @@ void _FlightModel::readRadio()
 	controlPitch = -Radio.channels[1]->value;
 	controlRoll = -Radio.channels[0]->value;
 
+	// Check the current throttle input status.
 	if( Radio.channels[2]->value < 0.01 )
+	{
+		// Throttle is low, assume 0 power.
+		// This should prevent slight radio interference from spinning
+		// up the motors.
 		power = 0;
+	}
+	else if( Radio.channels[2]->raw == 0 )
+	{
+		// If the radio is off, set power to minimum control power.
+		// This should slow down the decent without using bad control values.
+		power = MIN_CONTROL_POWER;
+	}
 	else
+	{
+		// If we got proper values for the radio, read new power.
 		power = Radio.channels[2]->value * ( MAX_CONTROL_POWER - MIN_CONTROL_POWER ) + MIN_CONTROL_POWER;
+	}
 
-	pitchRatePID.Kd = PID_TILT_RATE_KP + map( Radio.channels[4]->value * 1000, -500, 500, -500, 500 );
-	rollRatePID.Kd = PID_TILT_RATE_KP + map( Radio.channels[4]->value * 1000, -500, 500, -500, 500 );
-	Serial.println( pitchRatePID.Kp );
+	pitchRatePID.Ki = PID_TILT_RATE_KI + map( Radio.channels[4]->value * 1000, -1000, 1000, -2, 100 ) / 1000.0;
+	rollRatePID.Ki = PID_TILT_RATE_KI + map( Radio.channels[4]->value * 1000, -1000, 1000, -2, 100 ) / 1000.0;
+
+	if( pitchRatePID.Ki <= 0 )
+	{
+		pitchRatePID.Ki = 0;
+		rollRatePID.Ki = 0;
+		pitchRatePID.resetError();
+		rollRatePID.resetError();
+	}
 
 	lastHeadingUpdate = currentTime;
 }
@@ -85,6 +107,20 @@ void _FlightModel::update()
 	readRadio();
 	readIMU();
 
+	VectorFloat gravity(
+		2 * (orientation.x*orientation.z - orientation.w*orientation.y),
+    	2 * (orientation.w*orientation.x + orientation.y*orientation.z),
+    	orientation.w*orientation.w - orientation.x*orientation.x - orientation.y*orientation.y + orientation.z*orientation.z );
+
+	gravity.normalize();
+	
+	// Thrust equals down thrust vector projected on the real thrust vector.
+	// This happens to end up as...
+	float thrustScale = 1 / gravity.z;
+	if( thrustScale < 0.5 ) { thrustScale = 0.5; }
+	if( thrustScale > 1.5 ) { thrustScale = 1.5; }
+
+
 #ifdef STABLE_MODE
 
 	// In stable mode we'll do quaternion matht o figure out orientaiton.
@@ -105,6 +141,14 @@ void _FlightModel::update()
 			1 - 2*(orientation.x*orientation.x + orientation.y*orientation.y) );
 	pitchOffsetError = controlPitch - asin(
 			2*(orientation.w*orientation.y - orientation.z*orientation.x) );
+
+	Serial.print( controlRoll );
+	Serial.print( "\t" );
+	Serial.print( rollOffsetError );
+	Serial.print( "\t" );
+	Serial.print( controlPitch );
+	Serial.print( "\t" );
+	Serial.println( pitchOffsetError );
 
 	// In stable mode update offset pids
 	yawOffsetPID.update( yawOffsetError, currentTime );
@@ -150,10 +194,11 @@ void _FlightModel::update()
 	}
 	else
 	{
-		setEnginePower( engines[0], power - pitchRatePID.getValue() - yawRatePID.getValue() + rollRatePID.getValue() );
-		setEnginePower( engines[1], power - pitchRatePID.getValue() + yawRatePID.getValue() - rollRatePID.getValue() );
-		setEnginePower( engines[2], power + pitchRatePID.getValue() - yawRatePID.getValue() - rollRatePID.getValue() );
-		setEnginePower( engines[3], power + pitchRatePID.getValue() + yawRatePID.getValue() + rollRatePID.getValue() );
+		float thrust = power * thrustScale;
+		setEnginePower( engines[0], thrust - pitchRatePID.getValue() - yawRatePID.getValue() + rollRatePID.getValue() );
+		setEnginePower( engines[1], thrust - pitchRatePID.getValue() + yawRatePID.getValue() - rollRatePID.getValue() );
+		setEnginePower( engines[2], thrust + pitchRatePID.getValue() - yawRatePID.getValue() - rollRatePID.getValue() );
+		setEnginePower( engines[3], thrust + pitchRatePID.getValue() + yawRatePID.getValue() + rollRatePID.getValue() );
 	}
 }
 

@@ -22,6 +22,21 @@
 
 #define ENABLE_CALIBRATION
 
+// Throttle tuning values
+//
+// Engine throttle = constrain(
+// 		thrust + yawPIDValue + pitchPIDValue + rollPIDValue,
+// 		0, 1000 )
+//
+// thrust = thrust (MAX_CONTROL_POWER - MIN_CONTROL_POWER) *
+// 			orientationScale (0.5 - 1.5)
+//
+// yawPIDValue, pitchPIDValue, rollPIDValue =
+// 		PID_X_RATE_KP * Offset +
+// 		Integral( PID_X_RATE_KI * dOffset );
+// 		PID_X_RATE_KD * dOffset
+//
+
 // PID tuning parameters
 // X_X_KP - Proportional Gain
 // X_X_KI - Integral gain
@@ -44,7 +59,7 @@
 
 #define PID_TILT_RATE_KP 30
 #define PID_TILT_RATE_KI 0.000
-#define PID_TILT_RATE_KD 30
+#define PID_TILT_RATE_KD 150
 #define PID_TILT_RATE_LIMIT 250
 
 #define STABLE_MODE
@@ -55,11 +70,11 @@
 //! Yaw control gain
 #define YAW_CONTROL_GAIN 5
 
-//! Maximum power available to power stick (255 is maximum power).
-// Some reserve should be left for corrective actions at full power.
-#define MAX_CONTROL_POWER 750
-
-#define MIN_CONTROL_POWER 250
+//! Maximum power available to power stick (1000 is maximum power).
+// Some reserve should be left for corrective actions at full power and
+// angular thrust compensation.
+#define MAX_CONTROL_POWER 650
+#define MIN_CONTROL_POWER 350
 
 //! Amount of samples averaged for input channels
 #define CHANNEL_AVERAGE_SAMPLES 4
