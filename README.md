@@ -1,8 +1,6 @@
-flyduino
---------
 
-Yet another Arduino based quadcopter
-====================================
+## flyduino
+### (Yet another) Arduino based quadcopter
 
 This project is developed for personal use and the code isn't optimal for re-use.
 
