@@ -71,8 +71,10 @@ void _FlightModel::readRadio()
 		power = Radio.channels[2]->value * ( MAX_CONTROL_POWER - MIN_CONTROL_POWER ) + MIN_CONTROL_POWER;
 	}
 
+	/*
 	pitchRatePID.Ki = PID_TILT_RATE_KI + map( Radio.channels[4]->value * 1000, -1000, 1000, -2, 100 ) / 1000.0;
 	rollRatePID.Ki = PID_TILT_RATE_KI + map( Radio.channels[4]->value * 1000, -1000, 1000, -2, 100 ) / 1000.0;
+	*/
 
 	if( pitchRatePID.Ki <= 0 )
 	{
@@ -141,14 +143,6 @@ void _FlightModel::update()
 			1 - 2*(orientation.x*orientation.x + orientation.y*orientation.y) );
 	pitchOffsetError = controlPitch - asin(
 			2*(orientation.w*orientation.y - orientation.z*orientation.x) );
-
-	Serial.print( controlRoll );
-	Serial.print( "\t" );
-	Serial.print( rollOffsetError );
-	Serial.print( "\t" );
-	Serial.print( controlPitch );
-	Serial.print( "\t" );
-	Serial.println( pitchOffsetError );
 
 	// In stable mode update offset pids
 	yawOffsetPID.update( yawOffsetError, currentTime );

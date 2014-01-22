@@ -58,12 +58,12 @@ bool _IMU::setup()
 	uint8_t devStatus = mpu->dmpInitialize();
 
 	// Set rough axis offsets
-	mpu->setXAccelOffset(-215);
-	mpu->setYAccelOffset(-321);
-	mpu->setZAccelOffset(2160);
-	mpu->setXGyroOffset(39);
-	mpu->setYGyroOffset(-40);
-	mpu->setZGyroOffset(7);
+	mpu->setXAccelOffset( IMU_XA_OFFSET );
+	mpu->setYAccelOffset( IMU_YA_OFFSET );
+	mpu->setZAccelOffset( IMU_ZA_OFFSET );
+	mpu->setXGyroOffset( IMU_XG_OFFSET );
+	mpu->setYGyroOffset( IMU_YG_OFFSET );
+	mpu->setZGyroOffset( IMU_ZG_OFFSET );
 
 	// Enable the DMP
 	if( devStatus == 0 ) {

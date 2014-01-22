@@ -57,9 +57,9 @@
 #define PID_YAW_RATE_KD 0
 #define PID_YAW_RATE_LIMIT 250
 
-#define PID_TILT_RATE_KP 30
+#define PID_TILT_RATE_KP 25
 #define PID_TILT_RATE_KI 0.000
-#define PID_TILT_RATE_KD 150
+#define PID_TILT_RATE_KD 30
 #define PID_TILT_RATE_LIMIT 250
 
 #define STABLE_MODE
@@ -73,8 +73,8 @@
 //! Maximum power available to power stick (1000 is maximum power).
 // Some reserve should be left for corrective actions at full power and
 // angular thrust compensation.
-#define MAX_CONTROL_POWER 650
-#define MIN_CONTROL_POWER 350
+#define MAX_CONTROL_POWER 550
+#define MIN_CONTROL_POWER 250
 
 //! Amount of samples averaged for input channels
 #define CHANNEL_AVERAGE_SAMPLES 4
@@ -82,6 +82,24 @@
 
 //! Deadzone for the input channels
 #define CHANNEL_DEADZONE 0.01
+
+//! Offset values for the IMU
+
+/* Old MPU
+#define IMU_XA_OFFSET -215
+#define IMU_YA_OFFSET -321
+#define IMU_ZA_OFFSET -2160
+#define IMU_XG_OFFSET 39
+#define IMU_XY_OFFSET -40
+#define IMU_ZG_OFFSET 7
+*/
+
+#define IMU_XA_OFFSET -3646
+#define IMU_YA_OFFSET 418
+#define IMU_ZA_OFFSET 1400
+#define IMU_XG_OFFSET 135
+#define IMU_YG_OFFSET -124
+#define IMU_ZG_OFFSET 13
 
 /************************
  * State change times
@@ -133,7 +151,7 @@
 #define ERRORLEVEL 0
 
 //! Sensor diagnostic output
-// #define DIAGNOSTICS
+#define DIAGNOSTICS
 
 #define DIAGNOSTIC_OUTPUT_RATE 16
 #define SERIAL_RATE 115200
