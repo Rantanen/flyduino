@@ -4,6 +4,7 @@
 #include "FlightModel.h"
 #include "common.h"
 #include "debug.h"
+#include "status.h"
 
 _FlightState FlightState;
 
@@ -36,14 +37,14 @@ void _FlightState::update()
 void _FlightState::updateChannelTimes()
 {
 	uint32_t ms = millis();
-	Channel* throttle = Radio.channels[2];
+	ChannelData* throttle = &Status.channelData[2];
 
 	// As long as the throttle isn't idling,
 	// push the idle start to the future.
-	if( throttle->raw > throttle->calibrationData.minValue + 25)
+	if( throttle->raw > Radio.channels[2]->calibrationData.minValue + 25)
 		throttleIdleStart = ms + 10;
 
-	Channel* yaw = Radio.channels[3];
+	ChannelData* yaw = &Status.channelData[3];
 
 	// Same for yaw left/right
 	if( yaw->value > -0.40 )

@@ -2,7 +2,9 @@
 #ifndef _ENGINE_H_
 #define _ENGINE_H_
 
+#include <Arduino.h>
 #include <Servo.h>
+#include "status.h"
 
 class Engine
 {
@@ -10,12 +12,10 @@ class Engine
 		/**
 		 * Engine constructor
 		 *
+		 * @param id Engine ID
 		 * @param pin The physical PWM pin the engine is attached to
-		 * @param x Engine X coordinate
-		 * @param y Engine Y coordinate
-		 * @param z Engine Z coordinate
 		 */
-		Engine( uint8_t pin );
+		Engine( uint8_t id, uint8_t pin );
 
 		/**
 		 * Engine setup routine
@@ -34,7 +34,7 @@ class Engine
 		 *
 		 * @return Engine power
 		 */
-		uint16_t getPower() { return _power; }
+		uint16_t getPower() { return Status.enginePower[ _id ]; }
 
 		/**
 		 * Get the engine pin
@@ -46,12 +46,11 @@ class Engine
 
 	private:
 
+		//! Engine ID
+		uint8_t _id;
+
 		//! Engine pin
 		uint8_t _pin;
-
-		//! Current engine power
-		uint16_t _power;
-
 
 		//! The servo to which the engine is attached
 		Servo _servo;

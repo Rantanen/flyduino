@@ -6,6 +6,7 @@
 
 uint8_t previousPins0 = 0;
 uint8_t previousPins1 = 0;
+uint8_t previousPins2 = 0;
 unsigned long highStart[ MAX_CHANNELS ];
 unsigned int volatile pinValues[ MAX_CHANNELS ][ CHANNEL_AVERAGE_SAMPLES ];
 uint8_t pinBufferIndex[ MAX_CHANNELS ];
@@ -25,7 +26,13 @@ uint8_t pinBufferIndex[ MAX_CHANNELS ];
 	if( chn_pin == 10 && port == 0 ) checkPin( changedPins, pins, 2, chn_num - 1, us ); \
 	if( chn_pin == 11 && port == 0 ) checkPin( changedPins, pins, 3, chn_num - 1, us ); \
 	if( chn_pin == 12 && port == 0 ) checkPin( changedPins, pins, 4, chn_num - 1, us ); \
-	if( chn_pin == 13 && port == 0 ) checkPin( changedPins, pins, 5, chn_num - 1, us );
+	if( chn_pin == 13 && port == 0 ) checkPin( changedPins, pins, 5, chn_num - 1, us ); \
+	if( chn_pin == 14 && port == 1 ) checkPin( changedPins, pins, 0, chn_num - 1, us ); \
+	if( chn_pin == 15 && port == 1 ) checkPin( changedPins, pins, 1, chn_num - 1, us ); \
+	if( chn_pin == 16 && port == 1 ) checkPin( changedPins, pins, 2, chn_num - 1, us ); \
+	if( chn_pin == 17 && port == 1 ) checkPin( changedPins, pins, 3, chn_num - 1, us ); \
+	if( chn_pin == 18 && port == 1 ) checkPin( changedPins, pins, 4, chn_num - 1, us ); \
+	if( chn_pin == 19 && port == 1 ) checkPin( changedPins, pins, 5, chn_num - 1, us );
 
 #ifndef CHN1
 #define CHN1 -1
@@ -65,12 +72,15 @@ bool PinStatus::setup()
 {
 	// Enable the interrupts
 	PCICR |= ( 1 << PCIE0 );
+	PCICR |= ( 1 << PCIE1 );
 	PCICR |= ( 1 << PCIE2 );
 
 	PCMSK0 |= ( 1 << PCINT0 ); // 8
-	PCMSK0 |= ( 1 << PCINT3 ); // 11
+	PCMSK0 |= ( 1 << PCINT4 ); // 12
 
-	PCMSK2 |= ( 1 << PCINT19 ); // 3
+	PCMSK1 |= ( 1 << PCINT8 ); // 14 (A0)
+	PCMSK1 |= ( 1 << PCINT9 ); // 15 (A1)
+
 	PCMSK2 |= ( 1 << PCINT20 ); // 4
 	PCMSK2 |= ( 1 << PCINT23 ); // 7
 
@@ -135,7 +145,7 @@ ISR( PCINT0_vect )
 	unsigned long us = micros();
 
 	// We got the important bits. Enable interrupt.
-	sei();
+	//sei();
 
 #define changedPins (previousPins0 ^ pins)
 
@@ -153,15 +163,39 @@ ISR( PCINT0_vect )
 
 }
 
+ISR( PCINT1_vect )
+{
+	uint8_t pins = PINC;
+	unsigned long us = micros();
+
+	// We got the important bits. Enable interrupt.
+	//sei();
+
+#define changedPins (previousPins1 ^ pins)
+
+	CHECK_CHANNEL( 1, CHN1, 1 );
+	CHECK_CHANNEL( 1, CHN2, 2 );
+	CHECK_CHANNEL( 1, CHN3, 3 );
+	CHECK_CHANNEL( 1, CHN4, 4 );
+	CHECK_CHANNEL( 1, CHN5, 5 );
+	CHECK_CHANNEL( 1, CHN6, 6 );
+	CHECK_CHANNEL( 1, CHN7, 7 );
+	CHECK_CHANNEL( 1, CHN8, 8 );
+#undef changedPins
+
+	previousPins1 = pins;
+
+}
+
 ISR( PCINT2_vect )
 {
 	uint8_t pins = PIND;
 	unsigned long us = micros();
 
 	// We got the important bits. Enable interrupt.
-	sei();
+	//sei();
 
-#define changedPins (previousPins1 ^ pins)
+#define changedPins (previousPins2 ^ pins)
 
 	CHECK_CHANNEL( 2, CHN1, 1 );
 	CHECK_CHANNEL( 2, CHN2, 2 );
@@ -173,7 +207,7 @@ ISR( PCINT2_vect )
 	CHECK_CHANNEL( 2, CHN8, 8 );
 #undef changedPins
 
-	previousPins1 = pins;
+	previousPins2 = pins;
 
 }
 

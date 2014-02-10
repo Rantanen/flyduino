@@ -15,9 +15,9 @@ class Channel {
 		/**
 		 * Constructor
 		 *
-		 * @param pin Pin number of the input pin for this channel
+		 * @param id Channel number
 		 */
-		Channel( uint8_t pin );
+		Channel( uint8_t id );
 
 		/**
 		 * Perform one sample worth of calibration.
@@ -57,14 +57,8 @@ class Channel {
 		 */
 		void loadCalibration();
 
-		//! Input pin number
-		uint8_t pin;
-
-		//! Raw pulse duration in microseconds.
-		unsigned int raw;
-
-		//! Current channel value.
-		float value;
+		//! Channel ID number
+		uint8_t id;
 
 		struct CalibrationData
 		{

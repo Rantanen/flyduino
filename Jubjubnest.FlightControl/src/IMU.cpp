@@ -9,10 +9,14 @@
 #pragma GCC diagnostic pop
 
 #include "debug.h"
+#include "status.h"
 
 #define UINT16_MAX 0xffff
 
 _IMU IMU;
+
+const float pi = -3.14159265359;
+Quaternion orientationOffset( cos( pi/4 ), 0, 0, sin( pi / 4 ) );
 
 namespace IMUInterrupt {
 	_IMU* registeredIMU = 0;
@@ -58,12 +62,14 @@ bool _IMU::setup()
 	uint8_t devStatus = mpu->dmpInitialize();
 
 	// Set rough axis offsets
+	/*
 	mpu->setXAccelOffset( IMU_XA_OFFSET );
 	mpu->setYAccelOffset( IMU_YA_OFFSET );
 	mpu->setZAccelOffset( IMU_ZA_OFFSET );
 	mpu->setXGyroOffset( IMU_XG_OFFSET );
 	mpu->setYGyroOffset( IMU_YG_OFFSET );
 	mpu->setZGyroOffset( IMU_ZG_OFFSET );
+	*/
 
 	// Enable the DMP
 	if( devStatus == 0 ) {
@@ -150,23 +156,26 @@ bool _IMU::readData()
 		fifoCount -= fifoPacketSize;
 
 		// Read orientation
-		mpu->dmpGetQuaternion( &orientation, fifoBuffer );
+		mpu->dmpGetQuaternion( &Status.orientation, fifoBuffer );
 
 		// Read gyro data
 		int32_t gyroData[3];
 		mpu->dmpGetGyro( gyroData, fifoBuffer );
 
-		rollRate -= rollRates[ rollRates_i ];
-		rollRate += ( rollRates[ rollRates_i++ ] = (gyroData[0] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
+		Status.rateRoll -= rollRates[ rollRates_i ];
+		Status.rateRoll += ( rollRates[ rollRates_i++ ] = (-gyroData[1] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
 		rollRates_i %= IMU_GYRO_SAMPLES;
 
-		pitchRate -= pitchRates[ pitchRates_i ];
-		pitchRate += ( pitchRates[ pitchRates_i++ ] = (gyroData[1] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
+		Status.ratePitch -= pitchRates[ pitchRates_i ];
+		Status.ratePitch += ( pitchRates[ pitchRates_i++ ] = (gyroData[0] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
 		pitchRates_i %= IMU_GYRO_SAMPLES;
 
-		yawRate -= yawRates[ yawRates_i ];
-		yawRate += ( yawRates[ yawRates_i++ ] = (gyroData[2] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
+		Status.rateYaw -= yawRates[ yawRates_i ];
+		Status.rateYaw += ( yawRates[ yawRates_i++ ] = (gyroData[2] / 32768.0f * 2*3.14159/360) / (float)IMU_GYRO_SAMPLES );
 		yawRates_i %= IMU_GYRO_SAMPLES;
+
+		// Rotate orientation to quad coordinates
+		//orientation = orientation.getProduct( orientationOffset );
 	}
 
 	// Mark the last read for diagnostic purposes.

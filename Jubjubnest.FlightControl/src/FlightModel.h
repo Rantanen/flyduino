@@ -34,9 +34,6 @@ class _FlightModel : public IFlightState
 		void start();
 		void stop();
 
-		//! Orientation
-		Quaternion orientation;
-
 		float yawRate;
 		float pitchRate;
 		float rollRate;
@@ -48,12 +45,6 @@ class _FlightModel : public IFlightState
 		float controlYaw;
 		float controlPitch;
 		float controlRoll;
-
-		//! True if the engine is on
-		bool engineOn;
-
-		//! True if the flight model is armed (able to fly)
-		bool armed;
 
 		//! Amount of engines present
 		int engineCount;
@@ -86,7 +77,6 @@ class _FlightModel : public IFlightState
 
 	private:
 		void readRadio();
-		void readIMU();
 };
 
 extern _FlightModel FlightModel;

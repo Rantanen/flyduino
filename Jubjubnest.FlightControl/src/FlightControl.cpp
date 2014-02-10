@@ -11,10 +11,13 @@
 #include "SerialInput.h"
 #include "Engine.h"
 #include "FlightState.h"
+#include "status.h"
 
 #ifdef DIAGNOSTICS
 #include "Diagnostics.h"
 #endif
+
+Status_ Status;
 
 int main(void)
 {
@@ -35,10 +38,16 @@ Diagnostics diag( DIAGNOSTIC_OUTPUT_RATE );
 #endif
 
 Engine engines[4] = {
+	Engine(0, 11),  //  1, 1
+	Engine(1, 10),  //  1,-1
+	Engine(2, 9),  // -1,-1
+	Engine(3, 6)  // -1, 1
+	/* Old
 	Engine(5),  //  1, 1
 	Engine(6),  //  1,-1
 	Engine(9),  // -1,-1
 	Engine(10)  // -1, 1
+	*/
 };
 
 #define STOP_ERROR( msg ) { ERROR_F( msg ); while( true ); }
@@ -63,6 +72,9 @@ void setup() {
 	Radio.addChannel( 2 );
 	Radio.addChannel( 3 );
 	Radio.addChannel( 4 );
+	Radio.addChannel( 5 );
+
+	Serial.println( "Init" );
 
 	// Setup the engines first to reset the channels for ECM
 	for( int i = 0; i < 4; i++ )
@@ -75,18 +87,22 @@ void setup() {
 	if( !PinStatus::setup() )
 		STOP_ERROR( "Failed to initialize pin change interrupts");
 
-	if( !IMU.setup() || !IMU.setupInterrupt() )
-		STOP_ERROR( "Failed to initialize IMU");
+	if( !IMU.setup() || !IMU.setupInterrupt() ) {
+		STOP_ERROR( "Failed to initialize IMU" );
+	}
 
 	// Wait for the TX to give valid values
+	Serial.println( "Waiting radio" );
 	while( true )
 	{
-		if( !Radio.update() ) continue;
+		if( !Radio.update() ) { continue; }
 
 		for( uint8_t i = 0; i < Radio.channelCount; i++ )
 		{
-			if( Radio.channels[i]->raw < 750 ||	Radio.channels[i]->raw > 2250 )
+			if( Status.channelData[ i ].raw < 750 || Status.channelData[ i ].raw > 2250 )
+			{
 				continue;
+			}
 		}
 
 		break;
@@ -97,7 +113,7 @@ void setup() {
 
 #ifdef ENABLE_CALIBRATION
 
-	if( Radio.channels[1]->raw < 1400 )
+	if( Status.channelData[ 1 ].raw < 1400 )
 	{
 		INFO( "Calibration started" );
 
@@ -109,7 +125,7 @@ void setup() {
 			Radio.calibrate();
 
 			// When the elevator isn't centered, postpone the calibration ending.
-			if( Radio.channels[1]->raw < 1400 || Radio.channels[1]->raw > 1600 )
+			if( Status.channelData[ 1 ].raw < 1400 || Status.channelData[ 1 ].raw > 1600 )
 				canExitCalibration = millis() + 4000;
 		}
 
@@ -124,7 +140,7 @@ void setup() {
 		delay( 1000 );
 
 		Radio.update();
-		if( Radio.channels[1]->raw > 1700 )
+		if( Status.channelData[ 1 ].raw > 1700 )
 		{
 			// Elevator was up
 			//   -> this calibration was intended and should be saved.
@@ -142,6 +158,8 @@ void setup() {
 		Radio.loadCalibration();
 		INFO( "Calibration loaded" );
 	}
+
+	Serial.println( "OK" );
 }
 
 void loop()

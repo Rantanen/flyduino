@@ -1,6 +1,7 @@
 
 #include "Radio.h"
 #include "debug.h"
+#include "Status.h"
 
 _Radio Radio;
 
@@ -17,11 +18,11 @@ _Radio::~_Radio()
 	}
 }
 
-void _Radio::addChannel( int pin )
+void _Radio::addChannel( int id )
 {
-	channels[ channelCount ] = new Channel( pin );
-	pinMode( pin, INPUT );
+	channels[ channelCount ] = new Channel( id );
 	channelCount++;
+	Status.channels = channelCount;
 }
 
 void _Radio::calibrate()
@@ -65,9 +66,11 @@ bool _Radio::update()
 	int successful = 0;
 	for( int i = 0; i < channelCount; i++ )
 	{
-		successful += channels[ i ]->update();
+		if( channels[ i ]->update() )
+			successful++;
 	}
 
+	Serial.println( successful );
 	return successful == channelCount;
 }
 

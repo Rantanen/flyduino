@@ -40,14 +40,7 @@ class _IMU
 		 */
 		bool readData();
 
-		//! Current orientation based on the IMU
-		Quaternion orientation;
-
-		//! Current gyroscope rates.
-		float yawRate;
-		float pitchRate;
-		float rollRate;
-
+		//! Rolling average for roll rates
 		float yawRates[ IMU_GYRO_SAMPLES ];
 		float pitchRates[ IMU_GYRO_SAMPLES ];
 		float rollRates[ IMU_GYRO_SAMPLES ];

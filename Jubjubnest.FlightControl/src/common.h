@@ -3,7 +3,7 @@
 #define _COMMON_H_
 
 // Define LIVE to allow engines to respond to throttle input.
-#define LIVE
+// #define LIVE
 
 /************************
  * Configuration tweaks
@@ -13,14 +13,14 @@
 #define ENGINE_ZERO_DELAY 5000
 
 //! Maximum amount of engines supported
-#define MAX_ENGINES 8
+#define MAX_ENGINES 4
 #define MAX_CHANNELS 7
 
 #define MIN_ESC_PWM_WIDTH 1000
 #define ESC_PWM_LIMIT 2000
 #define MAX_ESC_PWM_WIDTH 4000
 
-#define ENABLE_CALIBRATION
+// #define ENABLE_CALIBRATION
 
 // Throttle tuning values
 //
@@ -73,8 +73,8 @@
 //! Maximum power available to power stick (1000 is maximum power).
 // Some reserve should be left for corrective actions at full power and
 // angular thrust compensation.
-#define MAX_CONTROL_POWER 550
-#define MIN_CONTROL_POWER 250
+#define MAX_CONTROL_POWER 650
+#define MIN_CONTROL_POWER 350
 
 //! Amount of samples averaged for input channels
 #define CHANNEL_AVERAGE_SAMPLES 4
@@ -118,11 +118,12 @@
 //! Pins to which different radio channels are attached to.
 // NOTE: These need to be enabled in PinStatus for pin change
 //       interrupts separately.
-#define CHN1 4
-#define CHN2 11
+#define CHN1 12
+#define CHN2 8
 #define CHN3 7
-#define CHN4 8
-#define CHN5 3
+#define CHN4 4
+#define CHN5 15
+#define CHN6 14
 
 /**********************
  * Miscellaneous values

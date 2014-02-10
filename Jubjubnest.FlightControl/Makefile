@@ -66,7 +66,7 @@ ARDUINO_CXX = CDC.cpp HardwareSerial.cpp \
 				# main.cpp not included
 
 #PORT = /dev/tty.usbserial*
-PORT = COM5
+PORT = COM4
 TARGET = flightcontrol
 ARDUINO = arduino/cores/arduino
 ARDUINO_H = $(ARDUINO)/arduino.h

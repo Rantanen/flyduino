@@ -5,9 +5,10 @@
 #include "PinStatus.h"
 #include <EEPROM.h>
 #include "common.h"
+#include "status.h"
 
-Channel::Channel( uint8_t pin )
-	: pin( pin )
+Channel::Channel( uint8_t id )
+	: id( id )
 {
 	resetCalibration();
 }
@@ -20,7 +21,7 @@ void Channel::resetCalibration()
 
 void Channel::calibrate()
 {
-	uint16_t value = PinStatus::getValue( pin );
+	uint16_t value = PinStatus::getValue( id );
 	if( calibrationData.maxValue == 0 ||
 			value > calibrationData.maxValue ) calibrationData.maxValue = value;
 	if( calibrationData.minValue == 0 ||
@@ -29,7 +30,7 @@ void Channel::calibrate()
 
 void Channel::storeCenter()
 {
-	uint16_t center = PinStatus::getValue( pin );
+	uint16_t center = PinStatus::getValue( id );
 	calibrationData.center = center;
 	
 	uint16_t maxOffset = max(
@@ -41,32 +42,32 @@ void Channel::storeCenter()
 
 bool Channel::update()
 {
-	long duration = PinStatus::getValue( pin );
+	long duration = PinStatus::getValue( id );
 
 	// If the input data is bad (signal lost) set output to zero.
 	if( duration == 0 ) {
 		WARN( "Bad values." );
-		raw = calibrationData.center;
-		value = 0;
+		Status.channelData[ id ].raw = calibrationData.center;
+		Status.channelData[ id ].value = 0;
 		return false;
 	}
 
-	raw = duration;
-	duration = constrain( raw, calibrationData.minValue, calibrationData.maxValue );
-	value = (duration - calibrationData.center) * calibrationData.scale;
+	Status.channelData[ id ].raw = duration;
+	duration = constrain( Status.channelData[ id ].raw, calibrationData.minValue, calibrationData.maxValue );
+	Status.channelData[ id ].value = (duration - calibrationData.center) * calibrationData.scale;
 
-	if( value > 0 ) {
-		if( value < CHANNEL_DEADZONE )
-			value = 0;
+	if( Status.channelData[ id ].value > 0 ) {
+		if( Status.channelData[ id ].value < CHANNEL_DEADZONE )
+			Status.channelData[ id ].value = 0;
 		else
-			value -= CHANNEL_DEADZONE;
+			Status.channelData[ id ].value -= CHANNEL_DEADZONE;
 	}
 	else
 	{
-		if( value > -CHANNEL_DEADZONE )
-			value = 0;
+		if( Status.channelData[ id ].value > -CHANNEL_DEADZONE )
+			Status.channelData[ id ].value = 0;
 		else
-			value += CHANNEL_DEADZONE;
+			Status.channelData[ id ].value += CHANNEL_DEADZONE;
 	}
 
 	return true;
@@ -74,7 +75,7 @@ bool Channel::update()
 
 void Channel::saveCalibration()
 {
-	uint16_t start = CHANNEL_EEPROM_START + sizeof( calibrationData ) * pin;
+	uint16_t start = CHANNEL_EEPROM_START + sizeof( calibrationData ) * id;
 	uint8_t* dataStart = reinterpret_cast<uint8_t*>( &calibrationData );
 	for( uint8_t i = 0; i < sizeof( calibrationData ); i++ )
 	{
@@ -85,7 +86,7 @@ void Channel::saveCalibration()
 
 void Channel::loadCalibration()
 {
-	uint16_t start = CHANNEL_EEPROM_START + sizeof( calibrationData ) * pin;
+	uint16_t start = CHANNEL_EEPROM_START + sizeof( calibrationData ) * id;
 	uint8_t* dataStart = reinterpret_cast<uint8_t*>( &calibrationData );
 	for( uint8_t i = 0; i < sizeof( calibrationData ); i++ )
 	{
