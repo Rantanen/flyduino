@@ -8,3 +8,9 @@
 /Jubjubnest.FlightControl/obj
 /Jubjubnest.FlightMonitor/obj
 /Jubjubnest.FlightMonitor/bin
+
+/FlightControl.sln.DotSettings
+/Jubjubnest.FlightControl/flightcontrol.sym
+/Jubjubnest.FlightMonitor.node/build
+
+/Jubjubnest.FlightMonitor.node/node_modules

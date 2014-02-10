@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="monitorApp">
+  <head>
+    <title>UAV Monitor</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="/javascripts/three.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.8/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <!--
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.8/angular-route.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.8/angular-resource.min.js"></script>
+    -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+
+    <style>
+        #floatingCirclesG{
+            margin: 300px auto;
+            position:relative;
+            width:512px;
+            height:512px;
+            -moz-transform:scale(0.6);
+            -webkit-transform:scale(0.6);
+            -o-transform:scale(0.6);
+            -ms-transform:scale(0.6);
+            transform:scale(0.6);
+        }
+
+        .f_circleG{
+        position:absolute;
+        background-color:#111111;
+        height:93px;
+        width:93px;
+        -moz-border-radius:47px;
+        -moz-animation-name:f_fadeG;
+        -moz-animation-duration:1.12s;
+        -moz-animation-iteration-count:infinite;
+        -moz-animation-direction:linear;
+        -webkit-border-radius:47px;
+        -webkit-animation-name:f_fadeG;
+        -webkit-animation-duration:1.12s;
+        -webkit-animation-iteration-count:infinite;
+        -webkit-animation-direction:linear;
+        -o-border-radius:47px;
+        -o-animation-name:f_fadeG;
+        -o-animation-duration:1.12s;
+        -o-animation-iteration-count:infinite;
+        -o-animation-direction:linear;
+        -ms-border-radius:47px;
+        -ms-animation-name:f_fadeG;
+        -ms-animation-duration:1.12s;
+        -ms-animation-iteration-count:infinite;
+        -ms-animation-direction:linear;
+        border-radius:47px;
+        animation-name:f_fadeG;
+        animation-duration:1.12s;
+        animation-iteration-count:infinite;
+        animation-direction:linear;
+        }
+
+        #frotateG_01{
+        left:0;
+        top:209px;
+        -moz-animation-delay:0.42s;
+        -webkit-animation-delay:0.42s;
+        -o-animation-delay:0.42s;
+        -ms-animation-delay:0.42s;
+        animation-delay:0.42s;
+        }
+
+        #frotateG_02{
+        left:61px;
+        top:61px;
+        -moz-animation-delay:0.56s;
+        -webkit-animation-delay:0.56s;
+        -o-animation-delay:0.56s;
+        -ms-animation-delay:0.56s;
+        animation-delay:0.56s;
+        }
+
+        #frotateG_03{
+        left:209px;
+        top:0;
+        -moz-animation-delay:0.7s;
+        -webkit-animation-delay:0.7s;
+        -o-animation-delay:0.7s;
+        -ms-animation-delay:0.7s;
+        animation-delay:0.7s;
+        }
+
+        #frotateG_04{
+        right:61px;
+        top:61px;
+        -moz-animation-delay:0.84s;
+        -webkit-animation-delay:0.84s;
+        -o-animation-delay:0.84s;
+        -ms-animation-delay:0.84s;
+        animation-delay:0.84s;
+        }
+
+        #frotateG_05{
+        right:0;
+        top:209px;
+        -moz-animation-delay:0.98s;
+        -webkit-animation-delay:0.98s;
+        -o-animation-delay:0.98s;
+        -ms-animation-delay:0.98s;
+        animation-delay:0.98s;
+        }
+
+        #frotateG_06{
+        right:61px;
+        bottom:61px;
+        -moz-animation-delay:1.12s;
+        -webkit-animation-delay:1.12s;
+        -o-animation-delay:1.12s;
+        -ms-animation-delay:1.12s;
+        animation-delay:1.12s;
+        }
+
+        #frotateG_07{
+        left:209px;
+        bottom:0;
+        -moz-animation-delay:1.26s;
+        -webkit-animation-delay:1.26s;
+        -o-animation-delay:1.26s;
+        -ms-animation-delay:1.26s;
+        animation-delay:1.26s;
+        }
+
+        #frotateG_08{
+        left:61px;
+        bottom:61px;
+        -moz-animation-delay:1.4s;
+        -webkit-animation-delay:1.4s;
+        -o-animation-delay:1.4s;
+        -ms-animation-delay:1.4s;
+        animation-delay:1.4s;
+        }
+
+        @-moz-keyframes f_fadeG{
+        0%{
+        background-color:#333340}
+
+        100%{
+        background-color:#111111}
+
+        }
+
+        @-webkit-keyframes f_fadeG{
+        0%{
+        background-color:#333340}
+
+        100%{
+        background-color:#111111}
+
+        }
+
+        @-o-keyframes f_fadeG{
+        0%{
+        background-color:#333340}
+
+        100%{
+        background-color:#111111}
+
+        }
+
+        @-ms-keyframes f_fadeG{
+        0%{
+        background-color:#333340}
+
+        100%{
+        background-color:#111111}
+
+        }
+
+        @keyframes f_fadeG{
+        0%{
+        background-color:#444455}
+
+        100%{
+        background-color:#111111}
+
+        }
+
+    </style>
+  </head>
+
+  <body ng-controller="MonitorCtrl">
+
+    <div class="loading" ng-show="loading" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#111111;z-index:100">
+        <div id="floatingCirclesG">
+            <div class="f_circleG" id="frotateG_01">
+            </div>
+            <div class="f_circleG" id="frotateG_02">
+            </div>
+            <div class="f_circleG" id="frotateG_03">
+            </div>
+            <div class="f_circleG" id="frotateG_04">
+            </div>
+            <div class="f_circleG" id="frotateG_05">
+            </div>
+            <div class="f_circleG" id="frotateG_06">
+            </div>
+            <div class="f_circleG" id="frotateG_07">
+            </div>
+            <div class="f_circleG" id="frotateG_08">
+            </div>
+        </div>
+        <!-- See more at: http://cssload.net/#sthash.1GNnBCjX.dpuf -->
+    </div>
+
+    <scene
+        orientation="orientation"
+        enginePower="enginePower"
+        style="position:absolute;top:0;left:0;bottom:0;right:0"></scene>
+
+    <div class="hud" ng-hide="loading">
+        <div style="position: absolute; top:10px; left: 10px; width: 300px; background: white">
+            <select ng-model="selectedPort" ng-options="port.manufacturer for port in ports track by port.comName">
+            </select>
+            <button ng-click="connect()" ng-hide="connectedPort.comName == selectedPort.comName" >Connect</button>
+            <button ng-click="disconnect()" ng-hide="connectedPort.comName != selectedPort.comName" >Disconnect</button>
+        </div>
+
+        <pre style="position: absolute; top: 10px; right: 10px; background: white">
+            {{raw}}
+        </pre>
+    </div>
+
+  </body>
+</html>
